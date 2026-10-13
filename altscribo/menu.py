@@ -1,5 +1,6 @@
 import ctypes
 import queue
+import re
 import threading
 import tkinter as tk
 
@@ -9,6 +10,13 @@ LIGHT = {"bg": "#FFFFFF", "fg": "#1B2A2F", "muted": "#6B7A80", "hover": "#E3F1F4
          "border": "#C9D6DA", "sep": "#E4EAEC"}
 DARK = {"bg": "#25292C", "fg": "#F1F5F6", "muted": "#9AA8AE", "hover": "#34505A",
         "border": "#475258", "sep": "#394146"}
+
+
+def _rtl(label):
+    """ Tk يرسم النص باتجاه أساسي من اليسار؛ تضمين RLE يصحّح ترتيب النص العربي المختلط """
+    if re.search("[\u0600-\u06FF]", label):
+        return "\u202b" + label + "\u202c"
+    return label
 
 
 def _is_dark_theme():
@@ -25,9 +33,9 @@ def _is_dark_theme():
 class TrayMenu:
     """ قائمة منبثقة مخصصة بخط أكبر وتخطيط من اليمين إلى اليسار.
     تعمل في خيط Tk خاص؛ show(items) آمنة للاستدعاء من أي خيط.
-    items: قائمة عناصر (label, callback, enabled) أو None للفاصل. """
+    items: قائمة عناصر (label, callback, enabled[, checked]) أو None للفاصل. """
 
-    WIDTH = 320
+    WIDTH = 340
     ROW_H = 42
     PAD = 6
 
@@ -85,9 +93,10 @@ class TrayMenu:
             if item is None:
                 tk.Frame(body, bg=theme["sep"], height=1).pack(fill="x", padx=14, pady=4)
                 continue
-            label, callback, enabled = item
+            label, callback, enabled = item[:3]
+            checked = item[3] if len(item) > 3 else None
             rows += 1
-            self._row(body, theme, label, callback, enabled)
+            self._row(body, theme, label, callback, enabled, checked)
         tk.Frame(body, bg=theme["bg"], height=self.PAD).pack(fill="x")
 
         popup.update_idletasks()
@@ -113,31 +122,41 @@ class TrayMenu:
         except tk.TclError:
             self._popup = None
 
-    def _row(self, parent, theme, label, callback, enabled):
+    def _row(self, parent, theme, label, callback, enabled, checked=None):
         fg = theme["fg"] if enabled else theme["muted"]
         font = (FONT_FAMILY, 11, "bold") if callback is None and not enabled else (FONT_FAMILY, 12)
         row = tk.Frame(parent, bg=theme["bg"], height=self.ROW_H)
         row.pack(fill="x", padx=self.PAD)
         row.pack_propagate(False)
-        text = tk.Label(row, text=label, bg=theme["bg"], fg=fg, font=font, anchor="e",
-                        justify="right", padx=14)
-        text.pack(fill="both", expand=True)
+        labels = []
+        if checked is not None:
+            mark = tk.Label(row, text="✓" if checked else "", bg=theme["bg"], fg=fg,
+                            font=(FONT_FAMILY, 12, "bold"), width=2, anchor="e")
+            mark.pack(side="right", fill="y", padx=(0, 10))
+            labels.append(mark)
+        text = tk.Label(row, text=_rtl(label), bg=theme["bg"], fg=fg, font=font, anchor="e",
+                        justify="right", padx=14 if checked is None else 4)
+        text.pack(side="right", fill="both", expand=True)
+        labels.append(text)
         if not enabled:
             return
 
+        def paint(color):
+            row.configure(bg=color)
+            for w in labels:
+                w.configure(bg=color)
+
         def enter(_):
-            row.configure(bg=theme["hover"])
-            text.configure(bg=theme["hover"])
+            paint(theme["hover"])
 
         def leave(_):
-            row.configure(bg=theme["bg"])
-            text.configure(bg=theme["bg"])
+            paint(theme["bg"])
 
         def click(_):
             self._close()
             threading.Thread(target=callback, daemon=True).start()
 
-        for w in (row, text):
+        for w in (row, *labels):
             w.bind("<Enter>", enter)
             w.bind("<Leave>", leave)
             w.bind("<Button-1>", click)

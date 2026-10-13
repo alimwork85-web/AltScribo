@@ -1,0 +1,4 @@
+# التعرف المحلي بلا إنترنت (اختياري)
+# يتطلب Python من 3.12 إلى 3.14؛ لا تتوفر حزم ctranslate2 وonnxruntime لـ Python 3.15 بعد
+-r requirements.txt
+faster-whisper==1.2.1

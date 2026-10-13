@@ -12,7 +12,13 @@ DEFAULTS = {
     "timeout_seconds": 15,
     "max_gain": 4.0,
     "sample_rate": 16000,
+    "engine": "google",
+    "whisper_model": "small",
+    "auto_punctuation": True,
+    "spoken_punctuation": True,
 }
+
+ENGINES = ("google", "whisper")
 
 
 def get_resource_path(relative_path):
@@ -32,6 +38,7 @@ def get_data_dir():
 DATA_DIR = get_data_dir()
 SETTINGS_PATH = os.path.join(DATA_DIR, "settings.json")
 LOG_PATH = os.path.join(DATA_DIR, "altscribo.log")
+MODELS_DIR = os.path.join(DATA_DIR, "models")
 ICON_PATH = get_resource_path("AltScribo.ico")
 
 log = logging.getLogger(APP_NAME)
@@ -49,6 +56,18 @@ def setup_logging():
         log.addHandler(console)
 
 
+def _valid(key, value, default):
+    if isinstance(default, bool):
+        return isinstance(value, bool)
+    if isinstance(value, bool):
+        return False
+    if isinstance(default, (int, float)):
+        return isinstance(value, (int, float))
+    if key == "engine":
+        return value in ENGINES
+    return isinstance(value, type(default))
+
+
 def load_settings():
     """ يحمّل الإعدادات؛ ينشئ الملف إن لم يوجد، ولا يكتب فوقه إن كان تالفًا """
     settings = dict(DEFAULTS)
@@ -64,11 +83,35 @@ def load_settings():
             data = json.load(f)
         for key, default in DEFAULTS.items():
             value = data.get(key, default)
-            ok = isinstance(value, (int, float)) if isinstance(default, (int, float)) else isinstance(value, type(default))
-            if ok and not isinstance(value, bool):
+            if _valid(key, value, default):
                 settings[key] = value
             elif key in data:
                 log.warning("قيمة غير صالحة للإعداد %s، تُستخدم القيمة الافتراضية", key)
     except (OSError, ValueError, AttributeError) as e:
         log.warning("ملف الإعدادات تالف، تُستخدم القيم الافتراضية: %s", e)
     return settings
+
+
+def save_settings(updates):
+    """ يحفظ قيمًا معدّلة مع الإبقاء على بقية محتوى الملف؛ لا يكتب فوق ملف تالف """
+    data = {}
+    if os.path.exists(SETTINGS_PATH):
+        try:
+            with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, ValueError) as e:
+            log.warning("ملف الإعدادات تالف، لن يُحفظ التغيير: %s", e)
+            return False
+        if not isinstance(data, dict):
+            log.warning("ملف الإعدادات تالف، لن يُحفظ التغيير")
+            return False
+    data.update(updates)
+    tmp = SETTINGS_PATH + ".tmp"
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        os.replace(tmp, SETTINGS_PATH)
+        return True
+    except OSError as e:
+        log.warning("تعذّر حفظ الإعدادات: %s", e)
+        return False

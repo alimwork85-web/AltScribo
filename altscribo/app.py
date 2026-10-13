@@ -9,12 +9,12 @@ import pystray
 from PIL import Image, ImageDraw
 from pystray._util import win32
 
-from . import __version__, config
+from . import __version__, config, startup
 from .config import log
 from .injector import paste_text
 from .menu import TrayMenu
 from .recorder import Recorder
-from .transcriber import NetworkError, NoSpeech, Transcriber
+from .transcriber import EngineError, NetworkError, NoSpeech, Transcriber, whisper_available
 
 ERROR_ALREADY_EXISTS = 183
 _mutex = None
@@ -61,12 +61,8 @@ class App:
     def __init__(self):
         self.settings = config.load_settings()
         self.recorder = Recorder(self.settings["sample_rate"])
-        self.transcriber = Transcriber(
-            self.settings["sample_rate"],
-            self.settings["language"],
-            self.settings["timeout_seconds"],
-            float(self.settings["max_gain"]),
-        )
+        self.transcriber = Transcriber(self.settings, self.notify)
+        self.has_whisper = whisper_available()
         self.base_icon = load_base_icon()
         self.recording_icon = make_recording_icon(self.base_icon)
         self.icon = None
@@ -110,6 +106,10 @@ class App:
             log.error("خطأ اتصال: %s", e)
             self.notify("تعذّر الاتصال بخدمة التعرف على الكلام")
             return
+        except EngineError as e:
+            log.error("%s", e)
+            self.notify("تعذّر تشغيل التعرف المحلي (Whisper)، راجع السجلّ")
+            return
         except Exception:
             log.exception("خطأ أثناء معالجة الصوت")
             self.notify("حدث خطأ أثناء معالجة الصوت")
@@ -127,6 +127,30 @@ class App:
         except OSError as e:
             log.error("تعذّر فتح %s: %s", path, e)
 
+    def set_engine(self, name):
+        if self.settings["engine"] == name:
+            return
+        self.settings["engine"] = name
+        config.save_settings({"engine": name})
+        log.info("محرك التعرف: %s", name)
+        self.transcriber.preload()
+
+    def toggle_setting(self, key):
+        self.settings[key] = not self.settings[key]
+        config.save_settings({key: self.settings[key]})
+
+    def toggle_startup(self):
+        try:
+            if startup.is_enabled():
+                startup.disable()
+                self.notify("لن تعمل الأداة تلقائيًا مع Windows")
+            else:
+                startup.enable()
+                self.notify("ستعمل الأداة تلقائيًا مع Windows")
+        except Exception as e:
+            log.error("فشل تعديل التشغيل التلقائي: %s", e)
+            self.notify("تعذّر تعديل التشغيل التلقائي")
+
     def exit(self):
         if self.recorder.is_recording:
             self.recorder.stop()
@@ -140,6 +164,18 @@ class App:
             (f"AltScribo {__version__}  ({hotkey})", None, False),
             None,
             (toggle, self.toggle_recording, True),
+            None,
+            ("Google عبر الإنترنت", lambda: self.set_engine("google"), True,
+             self.settings["engine"] == "google"),
+            ("Whisper محلي بلا إنترنت" if self.has_whisper else "Whisper (غير مثبّت)",
+             lambda: self.set_engine("whisper"), self.has_whisper,
+             self.settings["engine"] == "whisper"),
+            ("ترقيم تلقائي", lambda: self.toggle_setting("auto_punctuation"), True,
+             self.settings["auto_punctuation"]),
+            ("أوامر الترقيم المنطوقة", lambda: self.toggle_setting("spoken_punctuation"), True,
+             self.settings["spoken_punctuation"]),
+            ("التشغيل مع Windows", self.toggle_startup, True, startup.is_enabled()),
+            None,
             ("فتح الإعدادات", lambda: self.open_path(config.SETTINGS_PATH), True),
             ("فتح السجلّ", lambda: self.open_path(config.LOG_PATH), True),
             None,
@@ -160,6 +196,10 @@ class App:
         except Exception as e:
             log.error("فشل تسجيل الاختصار: %s", e)
 
+        if self.settings["engine"] == "whisper" and not self.has_whisper:
+            log.warning("Whisper غير مثبّت، يُستخدم Google")
+            self.settings["engine"] = "google"
+        self.transcriber.preload()
         self.icon.run()
 
 

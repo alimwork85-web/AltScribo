@@ -1,12 +1,26 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
+
+datas = [('AltScribo.ico', '.')]
+binaries = []
+hiddenimports = ['altscribo.app', 'altscribo.config', 'altscribo.recorder', 'altscribo.transcriber', 'altscribo.injector', 'altscribo.menu', 'altscribo.punctuation', 'altscribo.startup', 'speech_recognition', 'sounddevice', 'scipy.io.wavfile', 'pyperclip', 'pystray', 'keyboard']
+
+# التعرف المحلي اختياري: يُضمَّن فقط إن كانت faster-whisper مثبّتة في بيئة البناء
+try:
+    import faster_whisper  # noqa: F401
+    datas += collect_data_files('faster_whisper')
+    binaries += collect_dynamic_libs('ctranslate2')
+    hiddenimports += ['faster_whisper', 'ctranslate2', 'tokenizers', 'onnxruntime', 'huggingface_hub']
+except ImportError:
+    pass
 
 
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
-    datas=[('AltScribo.ico', '.')],
-    hiddenimports=['altscribo.app', 'altscribo.config', 'altscribo.recorder', 'altscribo.transcriber', 'altscribo.injector', 'speech_recognition', 'sounddevice', 'scipy.io.wavfile', 'pyperclip', 'pystray', 'keyboard'],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
