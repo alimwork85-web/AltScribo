@@ -3,7 +3,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 datas = [('AltScribo.ico', '.')]
 binaries = []
-hiddenimports = ['altscribo.app', 'altscribo.config', 'altscribo.recorder', 'altscribo.transcriber', 'altscribo.injector', 'altscribo.menu', 'altscribo.punctuation', 'altscribo.startup', 'speech_recognition', 'sounddevice', 'scipy.io.wavfile', 'pyperclip', 'pystray', 'keyboard']
+hiddenimports = ['altscribo.app', 'altscribo.config', 'altscribo.recorder', 'altscribo.transcriber', 'altscribo.injector', 'altscribo.menu', 'altscribo.punctuation', 'altscribo.startup', 'speech_recognition', 'sounddevice', 'pyperclip', 'pystray', 'keyboard']
 
 # التعرف المحلي اختياري: يُضمَّن فقط إن كانت faster-whisper مثبّتة في بيئة البناء
 try:
@@ -13,6 +13,11 @@ try:
     hiddenimports += ['faster_whisper', 'ctranslate2', 'tokenizers', 'onnxruntime', 'huggingface_hub']
 except ImportError:
     pass
+
+
+# ملفات speech_recognition غير المستخدمة: نموذج pocketsphinx وأدوات flac لغير Windows
+# (يبقى flac-win32.exe لأن محرك Google يحتاجه)
+UNUSED_DATA = ('pocketsphinx-data', 'flac-linux', 'flac-mac')
 
 
 a = Analysis(
@@ -28,6 +33,8 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+a.datas = [d for d in a.datas if not any(u in d[0] for u in UNUSED_DATA)]
+a.binaries = [b for b in a.binaries if not any(u in b[0] for u in UNUSED_DATA)]
 pyz = PYZ(a.pure)
 
 exe = EXE(

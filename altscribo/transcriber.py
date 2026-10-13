@@ -1,8 +1,8 @@
 import io
 import threading
+import wave
 
 import numpy as np
-import scipy.io.wavfile as wav
 import speech_recognition as sr
 
 from . import punctuation
@@ -43,7 +43,11 @@ class GoogleEngine:
 
     def transcribe(self, recording):
         wav_io = io.BytesIO()
-        wav.write(wav_io, self.sample_rate, recording)
+        with wave.open(wav_io, "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(self.sample_rate)
+            w.writeframes(recording.astype("<i2").tobytes())
         wav_io.seek(0)
         with sr.AudioFile(wav_io) as source:
             audio = self.recognizer.record(source)
