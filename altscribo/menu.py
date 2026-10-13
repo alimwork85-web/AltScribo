@@ -35,9 +35,9 @@ class TrayMenu:
     تعمل في خيط Tk خاص؛ show(items) آمنة للاستدعاء من أي خيط.
     items: قائمة عناصر (label, callback, enabled[, checked]) أو None للفاصل. """
 
-    WIDTH = 340
-    ROW_H = 42
-    PAD = 6
+    WIDTH = 280
+    ROW_H = 32
+    PAD = 4
 
     def __init__(self):
         self._requests = queue.Queue()
@@ -91,7 +91,7 @@ class TrayMenu:
         rows = 0
         for item in items:
             if item is None:
-                tk.Frame(body, bg=theme["sep"], height=1).pack(fill="x", padx=14, pady=4)
+                tk.Frame(body, bg=theme["sep"], height=1).pack(fill="x", padx=12, pady=3)
                 continue
             label, callback, enabled = item[:3]
             checked = item[3] if len(item) > 3 else None
@@ -124,18 +124,18 @@ class TrayMenu:
 
     def _row(self, parent, theme, label, callback, enabled, checked=None):
         fg = theme["fg"] if enabled else theme["muted"]
-        font = (FONT_FAMILY, 11, "bold") if callback is None and not enabled else (FONT_FAMILY, 12)
+        font = (FONT_FAMILY, 9, "bold") if callback is None and not enabled else (FONT_FAMILY, 10)
         row = tk.Frame(parent, bg=theme["bg"], height=self.ROW_H)
         row.pack(fill="x", padx=self.PAD)
         row.pack_propagate(False)
         labels = []
         if checked is not None:
             mark = tk.Label(row, text="✓" if checked else "", bg=theme["bg"], fg=fg,
-                            font=(FONT_FAMILY, 12, "bold"), width=2, anchor="e")
-            mark.pack(side="right", fill="y", padx=(0, 10))
+                            font=(FONT_FAMILY, 10, "bold"), width=2, anchor="e")
+            mark.pack(side="right", fill="y", padx=(0, 8))
             labels.append(mark)
         text = tk.Label(row, text=_rtl(label), bg=theme["bg"], fg=fg, font=font, anchor="e",
-                        justify="right", padx=14 if checked is None else 4)
+                        justify="right", padx=12 if checked is None else 4)
         text.pack(side="right", fill="both", expand=True)
         labels.append(text)
         if not enabled:
