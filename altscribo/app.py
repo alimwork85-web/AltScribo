@@ -8,7 +8,7 @@ import keyboard
 import pystray
 from PIL import Image, ImageDraw
 
-from . import config
+from . import __version__, config
 from .config import log
 from .injector import paste_text
 from .recorder import Recorder
@@ -112,7 +112,7 @@ class App:
             log.exception("خطأ أثناء معالجة الصوت")
             self.notify("حدث خطأ أثناء معالجة الصوت")
             return
-        log.info("تم التعرف ولصق: %s", text)
+        log.info("تم التعرف ولصق نص من %s حرفًا", len(text))
         try:
             paste_text(text)
         except Exception:
@@ -134,7 +134,7 @@ class App:
     def run(self):
         hotkey = self.settings["hotkey"]
         menu = pystray.Menu(
-            pystray.MenuItem(f"AltScribo Voice Typing ({hotkey})", lambda: None, enabled=False),
+            pystray.MenuItem(f"AltScribo {__version__} ({hotkey})", lambda: None, enabled=False),
             pystray.MenuItem("تشغيل / إيقاف التسجيل", self.toggle_recording),
             pystray.MenuItem("فتح الإعدادات", lambda icon, item: self.open_path(config.SETTINGS_PATH)),
             pystray.MenuItem("فتح السجلّ", lambda icon, item: self.open_path(config.LOG_PATH)),
