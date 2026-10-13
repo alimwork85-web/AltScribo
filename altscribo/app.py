@@ -7,10 +7,12 @@ import winsound
 import keyboard
 import pystray
 from PIL import Image, ImageDraw
+from pystray._util import win32
 
 from . import __version__, config
 from .config import log
 from .injector import paste_text
+from .menu import TrayMenu
 from .recorder import Recorder
 from .transcriber import NetworkError, NoSpeech, Transcriber
 
@@ -125,22 +127,32 @@ class App:
         except OSError as e:
             log.error("تعذّر فتح %s: %s", path, e)
 
-    def exit(self, icon, item):
+    def exit(self):
         if self.recorder.is_recording:
             self.recorder.stop()
-        icon.stop()
+        self.icon.stop()
         os._exit(0)
+
+    def menu_items(self):
+        hotkey = self.settings["hotkey"]
+        toggle = "إيقاف التسجيل" if self.recorder.is_recording else "بدء التسجيل"
+        return [
+            (f"AltScribo {__version__}  ({hotkey})", None, False),
+            None,
+            (toggle, self.toggle_recording, True),
+            ("فتح الإعدادات", lambda: self.open_path(config.SETTINGS_PATH), True),
+            ("فتح السجلّ", lambda: self.open_path(config.LOG_PATH), True),
+            None,
+            ("خروج", self.exit, True),
+        ]
 
     def run(self):
         hotkey = self.settings["hotkey"]
-        menu = pystray.Menu(
-            pystray.MenuItem(f"AltScribo {__version__} ({hotkey})", lambda: None, enabled=False),
-            pystray.MenuItem("تشغيل / إيقاف التسجيل", self.toggle_recording),
-            pystray.MenuItem("فتح الإعدادات", lambda icon, item: self.open_path(config.SETTINGS_PATH)),
-            pystray.MenuItem("فتح السجلّ", lambda icon, item: self.open_path(config.LOG_PATH)),
-            pystray.MenuItem("خروج (Exit)", self.exit),
+        self.menu = TrayMenu()
+        self.icon = TrayIcon(
+            "AltScribo", self.base_icon, "AltScribo - أداة الإملاء الصوتي",
+            on_right_click=lambda: self.menu.show(self.menu_items()),
         )
-        self.icon = pystray.Icon("AltScribo", self.base_icon, "AltScribo - أداة الإملاء الصوتي", menu)
 
         try:
             keyboard.add_hotkey(hotkey, self.toggle_recording, suppress=True)
@@ -151,7 +163,25 @@ class App:
         self.icon.run()
 
 
+class TrayIcon(pystray.Icon):
+    """ أيقونة الشريط مع قائمة مخصصة بدل قائمة Windows الأصلية """
+
+    def __init__(self, *args, on_right_click, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._on_right_click = on_right_click
+
+    def _on_notify(self, wparam, lparam):
+        if lparam == win32.WM_RBUTTONUP:
+            self._on_right_click()
+        else:
+            super()._on_notify(wparam, lparam)
+
+
 def run():
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    except Exception:
+        pass
     config.setup_logging()
     if already_running():
         log.info("الأداة تعمل بالفعل، سيتم الخروج")
