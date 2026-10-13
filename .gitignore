@@ -7,4 +7,6 @@ __pycache__/
 # Build outputs
 build/
 dist/
-*.spec
+
+# Logs
+*.log
