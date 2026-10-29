@@ -18,6 +18,7 @@ from .config import log
 from .i18n import t
 from .injector import paste_text
 from .menu import TrayMenu
+from .overlay import Overlay
 from .recorder import Recorder, input_devices
 from .transcriber import EngineError, NetworkError, NoSpeech, Transcriber, whisper_available
 
@@ -170,6 +171,8 @@ class App:
         self.base_icon = load_base_icon()
         self.recording_icon = make_recording_icon(self.base_icon)
         self.icon = None
+        self.menu = None
+        self.overlay = None
 
     def notify(self, message):
         log.info(message)
@@ -192,6 +195,8 @@ class App:
                 self.icon.icon = self.recording_icon
                 self.icon.title = t("tip_recording")
                 log.info("بدأ التسجيل")
+                if self.overlay:
+                    self.overlay.show_recording()
                 if self.recorder.silence_seconds > 0:
                     threading.Thread(target=self.watch_silence, daemon=True).start()
             else:
@@ -200,6 +205,8 @@ class App:
                 self.icon.icon = self.base_icon
                 self.icon.title = t("tip_idle")
                 log.info("توقف التسجيل، جاري التحويل")
+                if self.overlay:
+                    self.overlay.show_processing()
                 threading.Thread(target=self.process, args=(frames,), daemon=True).start()
 
     def process(self, frames):
@@ -220,13 +227,17 @@ class App:
             log.exception("خطأ أثناء معالجة الصوت")
             self.notify(t("processing_failed"))
             return
-        log.info("تم التعرف ولصق نص من %s حرفًا", len(text))
-        add_history(text)
-        try:
-            paste_text(text)
-        except Exception:
-            log.exception("فشل اللصق")
-            self.notify(t("paste_failed"))
+        else:
+            log.info("تم التعرف ولصق نص من %s حرفًا", len(text))
+            add_history(text)
+            try:
+                paste_text(text)
+            except Exception:
+                log.exception("فشل اللصق")
+                self.notify(t("paste_failed"))
+        finally:
+            if self.overlay:
+                self.overlay.show_done()
 
     def open_path(self, path):
         try:
@@ -296,6 +307,18 @@ class App:
         config.save_settings({"language": code})
         log.info("لغة التعرف على الكلام: %s", code)
 
+    def toggle_overlay(self):
+        """ تفعيل/تعطيل مؤشر التسجيل على الشاشة """
+        enabled = not self.settings["show_overlay"]
+        self.settings["show_overlay"] = enabled
+        config.save_settings({"show_overlay": enabled})
+        if enabled and self.menu is not None:
+            self.overlay = self.overlay or Overlay(self.menu, self.base_icon)
+        elif not enabled and self.overlay is not None:
+            self.overlay.hide()
+            self.overlay = None
+        log.info("مؤشر التسجيل على الشاشة: %s", "مفعّل" if enabled else "معطّل")
+
     def toggle_ui_language(self):
         lang = "en" if i18n.current() == "ar" else "ar"
         self.settings["ui_language"] = lang
@@ -333,6 +356,7 @@ class App:
              self.settings["spoken_punctuation"]),
             (t("push_to_talk"), lambda: self.toggle_setting("push_to_talk"), True,
              self.settings["push_to_talk"]),
+            (t("show_overlay"), self.toggle_overlay, True, self.settings["show_overlay"]),
             (t("startup"), self.toggle_startup, True, startup.is_enabled()),
             (t("microphone"), self.microphone_menu(), True),
             None,
@@ -411,6 +435,8 @@ class App:
 
         self.register_hotkey(hotkey)
         threading.Thread(target=check_updates, args=(self.notify,), daemon=True).start()
+        if self.settings["show_overlay"]:
+            self.overlay = Overlay(self.menu, self.base_icon)
 
         if self.settings["engine"] == "whisper" and not self.has_whisper:
             log.warning("Whisper غير مثبّت، يُستخدم Google")

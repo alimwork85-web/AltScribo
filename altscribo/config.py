@@ -21,6 +21,7 @@ DEFAULTS = {
     "auto_stop_silence_seconds": 0,
     "silence_threshold": 500,
     "push_to_talk": False,
+    "show_overlay": True,
 }
 
 ENGINES = ("google", "whisper")

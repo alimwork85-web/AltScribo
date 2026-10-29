@@ -4,6 +4,8 @@ import re
 import threading
 import tkinter as tk
 
+from .config import log
+
 FONT_FAMILY = "Tahoma"
 
 LIGHT = {"bg": "#FFFFFF", "fg": "#1B2A2F", "muted": "#6B7A80", "hover": "#E3F1F4",
@@ -51,6 +53,10 @@ class TrayMenu:
     def show(self, items, rtl=True):
         self._requests.put((items, rtl))
 
+    def run_on_ui(self, fn):
+        """ ينفّذ دالة على خيط Tk؛ Tk لا يقبل الاستدعاء من خيوط أخرى """
+        self._requests.put(fn)
+
     # ---------- خيط Tk ----------
     def _loop(self):
         self._root = tk.Tk()
@@ -62,8 +68,14 @@ class TrayMenu:
     def _poll(self):
         try:
             while True:
-                items, rtl = self._requests.get_nowait()
-                self._open(items, rtl)
+                request = self._requests.get_nowait()
+                try:
+                    if callable(request):
+                        request()
+                    else:
+                        self._open(*request)
+                except Exception:
+                    log.warning("فشل تحديث واجهة القائمة", exc_info=True)
         except queue.Empty:
             pass
         self._root.after(40, self._poll)
