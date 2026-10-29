@@ -44,8 +44,12 @@ def parse_hotkey(text):
         elif part == "win":
             mods |= MOD_WIN
         elif len(part) == 1 and part.isascii() and part.isalnum():
+            if vk:
+                return None
             vk = ord(part.upper())
         elif len(part) in (2, 3) and part[0] == "f" and part[1:].isdigit() and 1 <= int(part[1:]) <= 12:
+            if vk:
+                return None
             vk = 0x70 + int(part[1:]) - 1
         else:
             return None
@@ -229,7 +233,7 @@ class App:
         parsed = parse_hotkey(hotkey)
         if parsed is None:
             log.error("صيغة الاختصار غير مفهومة: %s", hotkey)
-            self.notify(f"صيغة الاختصار غير مفهومة: {hotkey}")
+            self.notify(t("hotkey_invalid", hotkey=hotkey))
             return
         threading.Thread(target=self._hotkey_loop, args=parsed, daemon=True).start()
 
@@ -238,7 +242,7 @@ class App:
         user32 = ctypes.windll.user32
         if not user32.RegisterHotKey(None, HOTKEY_ID, modifiers, vk):
             log.error("تعذّر تسجيل الاختصار %s: محجوز لبرنامج آخر", self.settings["hotkey"])
-            self.notify(f"الاختصار {self.settings['hotkey']} محجوز لبرنامج آخر")
+            self.notify(t("hotkey_taken", hotkey=self.settings["hotkey"]))
             return
         try:
             log.info("تم تفعيل الاختصار العام (%s)", self.settings["hotkey"])
