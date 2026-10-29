@@ -5,6 +5,7 @@ import os
 import sys
 import threading
 import time
+import urllib.request
 import winsound
 
 import keyboard
@@ -22,6 +23,33 @@ from .transcriber import EngineError, NetworkError, NoSpeech, Transcriber, whisp
 
 ERROR_ALREADY_EXISTS = 183
 _mutex = None
+
+RELEASES_URL = "https://github.com/alimwork85-web/AltScribo/releases"
+LATEST_RELEASE_API = "https://api.github.com/repos/alimwork85-web/AltScribo/releases/latest"
+
+
+def version_tuple(text):
+    """ يحوّل "v1.3.2" إلى (1, 3, 2) للمقارنة الرقمية """
+    parts = []
+    for piece in str(text).strip().lstrip("vV").split("."):
+        digits = "".join(ch for ch in piece if ch.isdigit())
+        parts.append(int(digits) if digits else 0)
+    return tuple(parts)
+
+
+def check_updates(notify):
+    """ يفحص آخر إصدار على GitHub ويُشعر فقط؛ لا تنزيل ولا تثبيت """
+    try:
+        request = urllib.request.Request(LATEST_RELEASE_API, headers={"User-Agent": "AltScribo"})
+        with urllib.request.urlopen(request, timeout=5) as response:
+            data = json.load(response)
+        latest = str(data.get("tag_name", ""))
+        if version_tuple(latest) > version_tuple(__version__):
+            log.info("يتوفر إصدار أحدث: %s (الحالي %s)", latest, __version__)
+            notify(t("update_available", version=latest.lstrip("vV")))
+    except Exception as e:
+        log.info("تعذّر فحص التحديثات: %s", e)
+
 
 MOD_ALT = 0x1
 MOD_CONTROL = 0x2
@@ -313,6 +341,7 @@ class App:
             (t("switch_language"), self.toggle_ui_language, True),
             (t("open_settings"), lambda: self.open_path(config.SETTINGS_PATH), True),
             (t("open_log"), lambda: self.open_path(config.LOG_PATH), True),
+            (t("releases_page"), lambda: self.open_path(RELEASES_URL), True),
             None,
             (t("exit"), self.exit, True),
         ]
@@ -381,6 +410,7 @@ class App:
         )
 
         self.register_hotkey(hotkey)
+        threading.Thread(target=check_updates, args=(self.notify,), daemon=True).start()
 
         if self.settings["engine"] == "whisper" and not self.has_whisper:
             log.warning("Whisper غير مثبّت، يُستخدم Google")

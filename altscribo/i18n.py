@@ -34,6 +34,8 @@ STRINGS = {
     "push_to_talk": ("اضغط مع الاستمرار", "Hold to talk"),
     "speech_language_ar": ("لغة الكلام: العربية", "Speech: Arabic"),
     "speech_language_en": ("لغة الكلام: English", "Speech: English"),
+    "update_available": ("يتوفر إصدار جديد {version}", "New version {version} is available"),
+    "releases_page": ("صفحة الإصدارات", "Releases page"),
     "whisper_fallback": ("انقطع الإنترنت، استُخدم Whisper المحلي",
                          "No internet, used local Whisper"),
     "startup_off": ("لن تعمل الأداة تلقائيًا مع Windows", "AltScribo will no longer start with Windows"),
