@@ -29,6 +29,8 @@ STRINGS = {
     "repaste_last": ("أعد لصق آخر نص", "Paste last text"),
     "open_history": ("فتح سجل النصوص", "Open text history"),
     "history_empty": ("سجل النصوص فارغ", "Text history is empty"),
+    "whisper_fallback": ("انقطع الإنترنت، استُخدم Whisper المحلي",
+                         "No internet, used local Whisper"),
     "startup_off": ("لن تعمل الأداة تلقائيًا مع Windows", "AltScribo will no longer start with Windows"),
     "startup_on": ("ستعمل الأداة تلقائيًا مع Windows", "AltScribo will start with Windows"),
     "startup_failed": ("تعذّر تعديل التشغيل التلقائي", "Could not change the startup setting"),

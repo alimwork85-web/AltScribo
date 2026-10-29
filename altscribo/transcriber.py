@@ -141,7 +141,16 @@ class Transcriber:
             recording = (recording * gain).astype(np.int16)
 
         engine = self.engine
-        text = (engine.transcribe(recording) or "").strip()
+        try:
+            text = (engine.transcribe(recording) or "").strip()
+        except NetworkError:
+            # انقطع الإنترنت: يُعاد المحاولة محليًا على نفس التسجيل
+            if engine is not self.google or not whisper_available():
+                raise
+            log.warning("انقطع الإنترنت، إعادة المحاولة بـ Whisper المحلي")
+            self.whisper.notify(t("whisper_fallback"))
+            engine = self.whisper
+            text = (engine.transcribe(recording) or "").strip()
         if not text:
             raise NoSpeech(t("no_speech"))
         text = punctuation.process(
