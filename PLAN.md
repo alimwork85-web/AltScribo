@@ -151,7 +151,7 @@
 
 **الهدف:** أن يعرف المستخدم حالة التسجيل دون النظر إلى أيقونة الشريط، وهي غالبًا مخفية داخل السهم الصغير.
 
-**الملفات:** ملف جديد `altscribo/overlay.py`، و`altscribo/app.py`، و`altscribo/config.py`، و`altscribo/i18n.py`، و`altscribo/menu.py` لإضافة دالة تشغيل على خيط Tk فقط (دون تغيير شكل القائمة)، و`AltScribo.spec` لإضافة `'altscribo.overlay'` إلى `hiddenimports` فقط.
+**الملفات:** ملف جديد `altscribo/overlay.py`، و`altscribo/app.py`، و`altscribo/config.py`، و`altscribo/i18n.py`، و`altscribo/menu.py` لإضافة دالة تشغيل على خيط Tk فقط (دون تغيير شكل القائمة). لا حاجة لتعديل `AltScribo.spec`، لأن PyInstaller يجد `overlay.py` تلقائيًا عبر استيراده في `app.py`.
 
 **الشكل:** كبسولة صغيرة (نحو 160×40 بكسل)، بزوايا مستديرة وحواف ناعمة، فيها من البداية إلى النهاية: أيقونة التطبيق (`base_icon` مصغرة إلى 20 بكسل)، ثم مؤشر الحالة، ثم النص. ألوانها تتبع سمة Windows الفاتحة أو الداكنة عبر `_is_dark_theme()` الموجودة في `menu.py`، واتجاهها يتبع `i18n.is_rtl()`.
 
