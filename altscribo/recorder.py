@@ -1,5 +1,7 @@
 import threading
+import time
 
+import numpy as np
 import sounddevice as sd
 
 from .config import log
@@ -27,6 +29,9 @@ class Recorder:
     def __init__(self, sample_rate):
         self.sample_rate = sample_rate
         self.input_device = ""  # اسم جهاز الإدخال، و"" تعني الافتراضي
+        self.silence_seconds = 0  # 0 = الإيقاف التلقائي معطّل
+        self.silence_threshold = 500  # عتبة RMS لعدّ الصوت كلامًا
+        self.last_sound = None  # وقت آخر صوت فوق العتبة، None = لم يبدأ الكلام
         self.is_recording = False
         self._frames = []
         self._stream = None
@@ -46,12 +51,25 @@ class Recorder:
         return None
 
     def _callback(self, indata, frames, time_info, status):
-        if self.is_recording:
-            self._frames.append(indata.copy())
+        if not self.is_recording:
+            return
+        self._frames.append(indata.copy())
+        if self.silence_seconds <= 0:
+            return
+        rms = float(np.sqrt(np.mean(np.square(indata.astype(np.float32)))))
+        if rms >= self.silence_threshold:
+            self.last_sound = time.monotonic()
+
+    def silence_elapsed(self):
+        """ ثواني الصمت بعد أول صوت، أو None ما لم يبدأ الكلام بعد """
+        if self.last_sound is None:
+            return None
+        return time.monotonic() - self.last_sound
 
     def start(self):
         """ يرمي استثناءً إن فشل فتح الميكروفون """
         self._frames = []
+        self.last_sound = None
         stream = sd.InputStream(
             samplerate=self.sample_rate, channels=1, dtype="int16",
             device=self._device_index(), callback=self._callback

@@ -18,6 +18,8 @@ DEFAULTS = {
     "spoken_punctuation": True,
     "ui_language": "auto",
     "input_device": "",
+    "auto_stop_silence_seconds": 0,
+    "silence_threshold": 500,
     "push_to_talk": False,
 }
 

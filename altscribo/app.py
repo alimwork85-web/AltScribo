@@ -135,6 +135,8 @@ class App:
         i18n.set_language(self.settings["ui_language"])
         self.recorder = Recorder(self.settings["sample_rate"])
         self.recorder.input_device = self.settings["input_device"]
+        self.recorder.silence_seconds = self.settings["auto_stop_silence_seconds"]
+        self.recorder.silence_threshold = self.settings["silence_threshold"]
         self.transcriber = Transcriber(self.settings, self.notify)
         self.has_whisper = whisper_available()
         self.base_icon = load_base_icon()
@@ -162,6 +164,8 @@ class App:
                 self.icon.icon = self.recording_icon
                 self.icon.title = t("tip_recording")
                 log.info("بدأ التسجيل")
+                if self.recorder.silence_seconds > 0:
+                    threading.Thread(target=self.watch_silence, daemon=True).start()
             else:
                 frames = self.recorder.stop()
                 play_sound("stop")
@@ -312,6 +316,17 @@ class App:
             self.notify(t("hotkey_invalid", hotkey=hotkey))
             return
         threading.Thread(target=self._hotkey_loop, args=parsed, daemon=True).start()
+
+    def watch_silence(self):
+        """ يوقف التسجيل بعد صمت طويل؛ يعمل خارج callback الصوت """
+        limit = self.recorder.silence_seconds
+        while self.recorder.is_recording:
+            elapsed = self.recorder.silence_elapsed()
+            if elapsed is not None and elapsed >= limit:
+                log.info("صمت %.1f ثانية، إيقاف تلقائي", elapsed)
+                self.toggle_recording()
+                return
+            time.sleep(0.2)
 
     def push_to_talk(self, vk):
         """ وضع اضغط مع الاستمرار: تسجيل ما دام المفتاح مضغوطًا """
