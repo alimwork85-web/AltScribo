@@ -17,6 +17,7 @@ DEFAULTS = {
     "auto_punctuation": True,
     "spoken_punctuation": True,
     "ui_language": "auto",
+    "input_device": "",
 }
 
 ENGINES = ("google", "whisper")

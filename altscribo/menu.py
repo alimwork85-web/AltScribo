@@ -43,6 +43,7 @@ class TrayMenu:
         self._requests = queue.Queue()
         self._root = None
         self._popup = None
+        self._sub = None
         self._ready = threading.Event()
         threading.Thread(target=self._loop, daemon=True).start()
         self._ready.wait(5)
@@ -68,12 +69,14 @@ class TrayMenu:
         self._root.after(40, self._poll)
 
     def _close(self, *_):
-        if self._popup is not None:
-            try:
-                self._popup.destroy()
-            except tk.TclError:
-                pass
-            self._popup = None
+        for attr in ("_sub", "_popup"):
+            window = getattr(self, attr)
+            if window is not None:
+                try:
+                    window.destroy()
+                except tk.TclError:
+                    pass
+                setattr(self, attr, None)
 
     def _open(self, items, rtl):
         self._close()
@@ -113,6 +116,39 @@ class TrayMenu:
         popup.bind("<FocusOut>", lambda e: popup.after(80, self._close_if_unfocused))
         popup.focus_force()
 
+    def _open_sub(self, row, theme, rtl, items):
+        """ قائمة فرعية بجانب الصف: يسارًا في RTL ويمينًا في LTR """
+        if self._sub is not None:
+            try:
+                self._sub.destroy()
+            except tk.TclError:
+                pass
+            self._sub = None
+        sub = tk.Toplevel(self._root)
+        self._sub = sub
+        sub.overrideredirect(True)
+        sub.attributes("-topmost", True)
+        sub.configure(bg=theme["border"])
+        body = tk.Frame(sub, bg=theme["bg"])
+        body.pack(padx=1, pady=1, fill="both")
+        tk.Frame(body, bg=theme["bg"], height=self.PAD).pack(fill="x")
+        for item in items:
+            if item is None:
+                tk.Frame(body, bg=theme["sep"], height=1).pack(fill="x", padx=12, pady=3)
+                continue
+            label, callback, enabled = item[:3]
+            checked = item[3] if len(item) > 3 else None
+            self._row(body, theme, rtl, label, callback, enabled, checked)
+        tk.Frame(body, bg=theme["bg"], height=self.PAD).pack(fill="x")
+
+        sub.update_idletasks()
+        width, height = self.WIDTH, sub.winfo_reqheight()
+        rx, ry = row.winfo_rootx(), row.winfo_rooty()
+        x = rx - width if rtl else rx + row.winfo_width()
+        x = max(8, min(x, sub.winfo_screenwidth() - width - 8))
+        sub.geometry(f"{width}x{height}+{x}+{max(8, ry - self.PAD)}")
+        sub.bind("<Escape>", self._close)
+
     def _close_if_unfocused(self):
         if self._popup is None:
             return
@@ -139,6 +175,11 @@ class TrayMenu:
                         justify=side, padx=12 if checked is None else 4)
         text.pack(side=side, fill="both", expand=True)
         labels.append(text)
+        if isinstance(callback, (list, tuple)):
+            arrow = tk.Label(row, text="\u25c2" if rtl else "\u25b8", bg=theme["bg"], fg=fg,
+                             font=(FONT_FAMILY, 9), padx=8)
+            arrow.pack(side="left" if rtl else "right", fill="y")
+            labels.append(arrow)
         if not enabled:
             return
 
@@ -154,6 +195,9 @@ class TrayMenu:
             paint(theme["bg"])
 
         def click(_):
+            if isinstance(callback, (list, tuple)):
+                self._open_sub(row, theme, rtl, callback)
+                return
             self._close()
             threading.Thread(target=callback, daemon=True).start()
 

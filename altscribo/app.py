@@ -17,7 +17,7 @@ from .config import log
 from .i18n import t
 from .injector import paste_text
 from .menu import TrayMenu
-from .recorder import Recorder
+from .recorder import Recorder, input_devices
 from .transcriber import EngineError, NetworkError, NoSpeech, Transcriber, whisper_available
 
 ERROR_ALREADY_EXISTS = 183
@@ -134,6 +134,7 @@ class App:
         self.settings = config.load_settings()
         i18n.set_language(self.settings["ui_language"])
         self.recorder = Recorder(self.settings["sample_rate"])
+        self.recorder.input_device = self.settings["input_device"]
         self.transcriber = Transcriber(self.settings, self.notify)
         self.has_whisper = whisper_available()
         self.base_icon = load_base_icon()
@@ -221,6 +222,25 @@ class App:
         log.info("محرك التعرف: %s", name)
         self.transcriber.preload()
 
+    def set_input_device(self, name):
+        """ يختار ميكروفون الإدخال بالاسم ويحفظه (يُمنع أثناء التسجيل) """
+        if self.recorder.is_recording:
+            return
+        self.settings["input_device"] = name
+        self.recorder.input_device = name
+        config.save_settings({"input_device": name})
+        log.info("ميكروفون الإدخال: %s", name or "الافتراضي")
+
+    def microphone_menu(self):
+        """ عناصر القائمة الفرعية للميكروفون، والمختار عليه علامة """
+        current = self.settings["input_device"]
+        busy = self.recorder.is_recording
+        items = [(t("default_device"), lambda: self.set_input_device(""), not busy, current == "")]
+        for name in input_devices():
+            items.append((name, (lambda n: lambda: self.set_input_device(n))(name),
+                          not busy, current == name))
+        return items
+
     def toggle_setting(self, key):
         self.settings[key] = not self.settings[key]
         config.save_settings({key: self.settings[key]})
@@ -273,6 +293,7 @@ class App:
             (t("spoken_punctuation"), lambda: self.toggle_setting("spoken_punctuation"), True,
              self.settings["spoken_punctuation"]),
             (t("startup"), self.toggle_startup, True, startup.is_enabled()),
+            (t("microphone"), self.microphone_menu(), True),
             None,
             (t("switch_language"), self.toggle_ui_language, True),
             (t("open_settings"), lambda: self.open_path(config.SETTINGS_PATH), True),
