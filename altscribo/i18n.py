@@ -31,6 +31,7 @@ STRINGS = {
     "history_empty": ("سجل النصوص فارغ", "Text history is empty"),
     "microphone": ("الميكروفون", "Microphone"),
     "default_device": ("الافتراضي", "Default"),
+    "push_to_talk": ("اضغط مع الاستمرار", "Hold to talk"),
     "whisper_fallback": ("انقطع الإنترنت، استُخدم Whisper المحلي",
                          "No internet, used local Whisper"),
     "startup_off": ("لن تعمل الأداة تلقائيًا مع Windows", "AltScribo will no longer start with Windows"),

@@ -292,6 +292,8 @@ class App:
              self.settings["auto_punctuation"]),
             (t("spoken_punctuation"), lambda: self.toggle_setting("spoken_punctuation"), True,
              self.settings["spoken_punctuation"]),
+            (t("push_to_talk"), lambda: self.toggle_setting("push_to_talk"), True,
+             self.settings["push_to_talk"]),
             (t("startup"), self.toggle_startup, True, startup.is_enabled()),
             (t("microphone"), self.microphone_menu(), True),
             None,
@@ -311,6 +313,22 @@ class App:
             return
         threading.Thread(target=self._hotkey_loop, args=parsed, daemon=True).start()
 
+    def push_to_talk(self, vk):
+        """ وضع اضغط مع الاستمرار: تسجيل ما دام المفتاح مضغوطًا """
+        if self.recorder.is_recording:
+            return
+        self.toggle_recording()
+        if self.recorder.is_recording:
+            threading.Thread(target=self._wait_key_release, args=(vk,), daemon=True).start()
+
+    def _wait_key_release(self, vk):
+        """ يوقف التسجيل عند رفع الإصبع؛ لا يبدأ شيئًا من نفسه """
+        time.sleep(0.03)
+        while ctypes.windll.user32.GetAsyncKeyState(vk) & 0x8000:
+            time.sleep(0.03)
+        if self.recorder.is_recording:
+            self.toggle_recording()
+
     def _hotkey_loop(self, modifiers, vk):
         """ حلقة الرسائل: RegisterHotKey وGetMessageW في الخيط نفسه """
         user32 = ctypes.windll.user32
@@ -323,7 +341,10 @@ class App:
             msg = ctypes.wintypes.MSG()
             while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
                 if msg.message == WM_HOTKEY:
-                    self.toggle_recording()
+                    if self.settings["push_to_talk"]:
+                        self.push_to_talk(vk)
+                    else:
+                        self.toggle_recording()
         finally:
             user32.UnregisterHotKey(None, HOTKEY_ID)
 
