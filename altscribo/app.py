@@ -1,4 +1,5 @@
 import ctypes
+import ctypes.wintypes
 import os
 import sys
 import threading
@@ -19,6 +20,36 @@ from .transcriber import EngineError, NetworkError, NoSpeech, Transcriber, whisp
 
 ERROR_ALREADY_EXISTS = 183
 _mutex = None
+
+MOD_ALT = 0x1
+MOD_CONTROL = 0x2
+MOD_SHIFT = 0x4
+MOD_WIN = 0x8
+MOD_NOREPEAT = 0x4000
+WM_HOTKEY = 0x0312
+HOTKEY_ID = 1
+
+
+def parse_hotkey(text):
+    """ يحوّل "alt+s" إلى (المعدِّلات، رمز المفتاح)، أو None إن لم تُفهم الصيغة """
+    mods = MOD_NOREPEAT
+    vk = None
+    for part in str(text).lower().replace(" ", "").split("+"):
+        if part == "alt":
+            mods |= MOD_ALT
+        elif part in ("ctrl", "control"):
+            mods |= MOD_CONTROL
+        elif part == "shift":
+            mods |= MOD_SHIFT
+        elif part == "win":
+            mods |= MOD_WIN
+        elif len(part) == 1 and part.isascii() and part.isalnum():
+            vk = ord(part.upper())
+        elif len(part) in (2, 3) and part[0] == "f" and part[1:].isdigit() and 1 <= int(part[1:]) <= 12:
+            vk = 0x70 + int(part[1:]) - 1
+        else:
+            return None
+    return None if vk is None else (mods, vk)
 
 
 def already_running():
@@ -193,6 +224,31 @@ class App:
             (t("exit"), self.exit, True),
         ]
 
+    def register_hotkey(self, hotkey):
+        """ يشغّل الاختصار العام عبر RegisterHotKey بدل خطاف keyboard الهشّ """
+        parsed = parse_hotkey(hotkey)
+        if parsed is None:
+            log.error("صيغة الاختصار غير مفهومة: %s", hotkey)
+            self.notify(f"صيغة الاختصار غير مفهومة: {hotkey}")
+            return
+        threading.Thread(target=self._hotkey_loop, args=parsed, daemon=True).start()
+
+    def _hotkey_loop(self, modifiers, vk):
+        """ حلقة الرسائل: RegisterHotKey وGetMessageW في الخيط نفسه """
+        user32 = ctypes.windll.user32
+        if not user32.RegisterHotKey(None, HOTKEY_ID, modifiers, vk):
+            log.error("تعذّر تسجيل الاختصار %s: محجوز لبرنامج آخر", self.settings["hotkey"])
+            self.notify(f"الاختصار {self.settings['hotkey']} محجوز لبرنامج آخر")
+            return
+        try:
+            log.info("تم تفعيل الاختصار العام (%s)", self.settings["hotkey"])
+            msg = ctypes.wintypes.MSG()
+            while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
+                if msg.message == WM_HOTKEY:
+                    self.toggle_recording()
+        finally:
+            user32.UnregisterHotKey(None, HOTKEY_ID)
+
     def run(self):
         hotkey = self.settings["hotkey"]
         self.menu = TrayMenu()
@@ -201,11 +257,7 @@ class App:
             on_right_click=lambda: self.menu.show(self.menu_items(), i18n.is_rtl()),
         )
 
-        try:
-            keyboard.add_hotkey(hotkey, self.toggle_recording, suppress=True)
-            log.info("تم تفعيل الاختصار العام (%s)", hotkey)
-        except Exception as e:
-            log.error("فشل تسجيل الاختصار: %s", e)
+        self.register_hotkey(hotkey)
 
         if self.settings["engine"] == "whisper" and not self.has_whisper:
             log.warning("Whisper غير مثبّت، يُستخدم Google")

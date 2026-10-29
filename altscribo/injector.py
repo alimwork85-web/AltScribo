@@ -1,3 +1,4 @@
+import ctypes
 import time
 
 import keyboard
@@ -15,7 +16,7 @@ def paste_text(text):
     time.sleep(0.05)
     # انتظار تحرير Alt حتى لا يتحول اللصق إلى Ctrl+Alt+V
     for _ in range(20):
-        if not keyboard.is_pressed("alt"):
+        if not (ctypes.windll.user32.GetAsyncKeyState(0x12) & 0x8000):
             break
         time.sleep(0.05)
     keyboard.send("ctrl+v")
