@@ -10,7 +10,7 @@ STRINGS = {
     "engine_whisper": ("Whisper محلي بلا إنترنت", "Whisper (local, offline)"),
     "engine_whisper_missing": ("Whisper (غير مثبّت)", "Whisper (not installed)"),
     "auto_punctuation": ("ترقيم تلقائي", "Auto punctuation"),
-    "spoken_punctuation": ("أوامر الترقيم المنطوقة", "Spoken punctuation commands"),
+    "spoken_punctuation": ("أوامر الترقيم المنطوقة", "Spoken punctuation"),
     "startup": ("التشغيل مع Windows", "Start with Windows"),
     "switch_language": ("English", "العربية"),
     "open_settings": ("فتح الإعدادات", "Open settings"),
