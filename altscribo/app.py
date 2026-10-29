@@ -1,8 +1,10 @@
 import ctypes
 import ctypes.wintypes
+import json
 import os
 import sys
 import threading
+import time
 import winsound
 
 import keyboard
@@ -54,6 +56,40 @@ def parse_hotkey(text):
         else:
             return None
     return None if vk is None else (mods, vk)
+
+
+HISTORY_LIMIT = 20
+
+
+def load_history():
+    """ يقرأ سجل النصوص: [] إن لم يوجد، وNone إن كان الملف تالفًا (لا يُكتب فوقه) """
+    if not os.path.exists(config.HISTORY_PATH):
+        return []
+    try:
+        with open(config.HISTORY_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError) as e:
+        log.warning("ملف سجل النصوص تالف، لن يُكتب فوقه: %s", e)
+        return None
+    if not isinstance(data, list):
+        log.warning("ملف سجل النصوص تالف، لن يُكتب فوقه")
+        return None
+    return [item for item in data if isinstance(item, dict) and isinstance(item.get("text"), str)]
+
+
+def add_history(text):
+    """ يضيف النص مع وقته ويحفظ آخر 20 عنصرًا كتابةً ذرية """
+    items = load_history()
+    if items is None:
+        return
+    items.append({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "text": text})
+    tmp = config.HISTORY_PATH + ".tmp"
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(items[-HISTORY_LIMIT:], f, indent=2, ensure_ascii=False)
+        os.replace(tmp, config.HISTORY_PATH)
+    except OSError as e:
+        log.warning("تعذّر حفظ سجل النصوص: %s", e)
 
 
 def already_running():
@@ -152,6 +188,7 @@ class App:
             self.notify(t("processing_failed"))
             return
         log.info("تم التعرف ولصق نص من %s حرفًا", len(text))
+        add_history(text)
         try:
             paste_text(text)
         except Exception:
@@ -163,6 +200,18 @@ class App:
             os.startfile(path)
         except OSError as e:
             log.error("تعذّر فتح %s: %s", path, e)
+
+    def repaste_last(self):
+        """ يعيد لصق آخر نص مُعرَّف عليه من سجل النصوص """
+        items = load_history()
+        if not items:
+            self.notify(t("history_empty"))
+            return
+        try:
+            paste_text(items[-1]["text"])
+        except Exception:
+            log.exception("فشل لصق آخر نص")
+            self.notify(t("paste_failed"))
 
     def set_engine(self, name):
         if self.settings["engine"] == name:
@@ -205,10 +254,14 @@ class App:
     def menu_items(self):
         hotkey = self.settings["hotkey"]
         toggle = t("stop_recording") if self.recorder.is_recording else t("start_recording")
+        has_history = bool(load_history())
         return [
             (f"AltScribo {__version__}  ({hotkey})", None, False),
             None,
             (toggle, self.toggle_recording, True),
+            None,
+            (t("repaste_last"), self.repaste_last, has_history),
+            (t("open_history"), lambda: self.open_path(config.HISTORY_PATH), True),
             None,
             (t("engine_google"), lambda: self.set_engine("google"), True,
              self.settings["engine"] == "google"),

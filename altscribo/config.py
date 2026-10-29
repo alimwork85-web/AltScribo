@@ -40,6 +40,7 @@ def get_data_dir():
 DATA_DIR = get_data_dir()
 SETTINGS_PATH = os.path.join(DATA_DIR, "settings.json")
 LOG_PATH = os.path.join(DATA_DIR, "altscribo.log")
+HISTORY_PATH = os.path.join(DATA_DIR, "history.json")
 MODELS_DIR = os.path.join(DATA_DIR, "models")
 ICON_PATH = get_resource_path("AltScribo.ico")
 
