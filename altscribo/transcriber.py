@@ -153,9 +153,16 @@ class Transcriber:
             text = (engine.transcribe(recording) or "").strip()
         if not text:
             raise NoSpeech(t("no_speech"))
+        arabic = self.settings["language"].startswith("ar")
         text = punctuation.process(
             text,
-            spoken=self.settings["spoken_punctuation"],
-            auto=self.settings["auto_punctuation"] and not engine.punctuated,
+            spoken=self.settings["spoken_punctuation"] and arabic,
+            auto=self.settings["auto_punctuation"] and arabic and not engine.punctuated,
         )
         return text if text.endswith("\n") else text + " "
+
+    def set_language(self, code):
+        """ يغيّر لغة التعرف دون إعادة تحميل نموذج Whisper """
+        self.settings["language"] = code
+        self.google.language = code
+        self.whisper.language = code.split("-")[0]

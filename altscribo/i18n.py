@@ -32,6 +32,8 @@ STRINGS = {
     "microphone": ("الميكروفون", "Microphone"),
     "default_device": ("الافتراضي", "Default"),
     "push_to_talk": ("اضغط مع الاستمرار", "Hold to talk"),
+    "speech_language_ar": ("لغة الكلام: العربية", "Speech: Arabic"),
+    "speech_language_en": ("لغة الكلام: English", "Speech: English"),
     "whisper_fallback": ("انقطع الإنترنت، استُخدم Whisper المحلي",
                          "No internet, used local Whisper"),
     "startup_off": ("لن تعمل الأداة تلقائيًا مع Windows", "AltScribo will no longer start with Windows"),

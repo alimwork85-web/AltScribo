@@ -261,6 +261,13 @@ class App:
             log.error("فشل تعديل التشغيل التلقائي: %s", e)
             self.notify(t("startup_failed"))
 
+    def toggle_speech_language(self):
+        """ يبدّل لغة التعرف على الكلام؛ لا يمسّ لغة الواجهة """
+        code = "en-US" if self.settings["language"].startswith("ar") else "ar-SA"
+        self.transcriber.set_language(code)
+        config.save_settings({"language": code})
+        log.info("لغة التعرف على الكلام: %s", code)
+
     def toggle_ui_language(self):
         lang = "en" if i18n.current() == "ar" else "ar"
         self.settings["ui_language"] = lang
@@ -301,6 +308,8 @@ class App:
             (t("startup"), self.toggle_startup, True, startup.is_enabled()),
             (t("microphone"), self.microphone_menu(), True),
             None,
+            (t("speech_language_en") if self.settings["language"].startswith("en")
+             else t("speech_language_ar"), self.toggle_speech_language, True),
             (t("switch_language"), self.toggle_ui_language, True),
             (t("open_settings"), lambda: self.open_path(config.SETTINGS_PATH), True),
             (t("open_log"), lambda: self.open_path(config.LOG_PATH), True),
