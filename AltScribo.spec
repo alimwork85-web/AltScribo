@@ -3,7 +3,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 datas = [('AltScribo.ico', '.')]
 binaries = []
-hiddenimports = ['altscribo.app', 'altscribo.config', 'altscribo.recorder', 'altscribo.transcriber', 'altscribo.injector', 'altscribo.menu', 'altscribo.punctuation', 'altscribo.startup', 'altscribo.i18n','speech_recognition', 'sounddevice', 'pyperclip', 'pystray', 'keyboard']
+hiddenimports = ['altscribo.app', 'altscribo.config', 'altscribo.recorder', 'altscribo.transcriber', 'altscribo.injector', 'altscribo.menu', 'altscribo.punctuation', 'altscribo.startup', 'altscribo.i18n', 'altscribo.overlay', 'speech_recognition', 'sounddevice', 'pyperclip', 'pystray', 'keyboard']
 
 # التعرف المحلي اختياري: يُضمَّن فقط إن كانت faster-whisper مثبّتة في بيئة البناء
 try:
@@ -54,6 +54,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['AltScribo.ico'],
+    version='version_info.txt',
 )
 coll = COLLECT(
     exe,
