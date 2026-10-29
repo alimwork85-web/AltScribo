@@ -16,9 +16,11 @@ DEFAULTS = {
     "whisper_model": "small",
     "auto_punctuation": True,
     "spoken_punctuation": True,
+    "ui_language": "auto",
 }
 
 ENGINES = ("google", "whisper")
+UI_LANGUAGES = ("auto", "ar", "en")
 
 
 def get_resource_path(relative_path):
@@ -65,6 +67,8 @@ def _valid(key, value, default):
         return isinstance(value, (int, float))
     if key == "engine":
         return value in ENGINES
+    if key == "ui_language":
+        return value in UI_LANGUAGES
     return isinstance(value, type(default))
 
 

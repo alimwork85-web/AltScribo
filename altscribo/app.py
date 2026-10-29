@@ -9,8 +9,9 @@ import pystray
 from PIL import Image, ImageDraw
 from pystray._util import win32
 
-from . import __version__, config, startup
+from . import __version__, config, i18n, startup
 from .config import log
+from .i18n import t
 from .injector import paste_text
 from .menu import TrayMenu
 from .recorder import Recorder
@@ -60,6 +61,7 @@ def play_sound(kind):
 class App:
     def __init__(self):
         self.settings = config.load_settings()
+        i18n.set_language(self.settings["ui_language"])
         self.recorder = Recorder(self.settings["sample_rate"])
         self.transcriber = Transcriber(self.settings, self.notify)
         self.has_whisper = whisper_available()
@@ -82,17 +84,17 @@ class App:
                     self.recorder.start()
                 except Exception as e:
                     log.error("فشل فتح الميكروفون: %s", e)
-                    self.notify("تعذّر فتح الميكروفون")
+                    self.notify(t("mic_failed"))
                     return
                 play_sound("start")
                 self.icon.icon = self.recording_icon
-                self.icon.title = "AltScribo - جارٍ التسجيل…"
+                self.icon.title = t("tip_recording")
                 log.info("بدأ التسجيل")
             else:
                 frames = self.recorder.stop()
                 play_sound("stop")
                 self.icon.icon = self.base_icon
-                self.icon.title = "AltScribo - أداة الإملاء الصوتي"
+                self.icon.title = t("tip_idle")
                 log.info("توقف التسجيل، جاري التحويل")
                 threading.Thread(target=self.process, args=(frames,), daemon=True).start()
 
@@ -104,22 +106,22 @@ class App:
             return
         except NetworkError as e:
             log.error("خطأ اتصال: %s", e)
-            self.notify("تعذّر الاتصال بخدمة التعرف على الكلام")
+            self.notify(t("network_failed"))
             return
         except EngineError as e:
             log.error("%s", e)
-            self.notify("تعذّر تشغيل التعرف المحلي (Whisper)، راجع السجلّ")
+            self.notify(t("whisper_failed"))
             return
         except Exception:
             log.exception("خطأ أثناء معالجة الصوت")
-            self.notify("حدث خطأ أثناء معالجة الصوت")
+            self.notify(t("processing_failed"))
             return
         log.info("تم التعرف ولصق نص من %s حرفًا", len(text))
         try:
             paste_text(text)
         except Exception:
             log.exception("فشل اللصق")
-            self.notify("فشل لصق النص")
+            self.notify(t("paste_failed"))
 
     def open_path(self, path):
         try:
@@ -143,13 +145,21 @@ class App:
         try:
             if startup.is_enabled():
                 startup.disable()
-                self.notify("لن تعمل الأداة تلقائيًا مع Windows")
+                self.notify(t("startup_off"))
             else:
                 startup.enable()
-                self.notify("ستعمل الأداة تلقائيًا مع Windows")
+                self.notify(t("startup_on"))
         except Exception as e:
             log.error("فشل تعديل التشغيل التلقائي: %s", e)
-            self.notify("تعذّر تعديل التشغيل التلقائي")
+            self.notify(t("startup_failed"))
+
+    def toggle_ui_language(self):
+        lang = "en" if i18n.current() == "ar" else "ar"
+        self.settings["ui_language"] = lang
+        config.save_settings({"ui_language": lang})
+        i18n.set_language(lang)
+        self.icon.title = t("tip_recording") if self.recorder.is_recording else t("tip_idle")
+        log.info("لغة الواجهة: %s", lang)
 
     def exit(self):
         if self.recorder.is_recording:
@@ -159,35 +169,36 @@ class App:
 
     def menu_items(self):
         hotkey = self.settings["hotkey"]
-        toggle = "إيقاف التسجيل" if self.recorder.is_recording else "بدء التسجيل"
+        toggle = t("stop_recording") if self.recorder.is_recording else t("start_recording")
         return [
             (f"AltScribo {__version__}  ({hotkey})", None, False),
             None,
             (toggle, self.toggle_recording, True),
             None,
-            ("Google عبر الإنترنت", lambda: self.set_engine("google"), True,
+            (t("engine_google"), lambda: self.set_engine("google"), True,
              self.settings["engine"] == "google"),
-            ("Whisper محلي بلا إنترنت" if self.has_whisper else "Whisper (غير مثبّت)",
+            (t("engine_whisper") if self.has_whisper else t("engine_whisper_missing"),
              lambda: self.set_engine("whisper"), self.has_whisper,
              self.settings["engine"] == "whisper"),
-            ("ترقيم تلقائي", lambda: self.toggle_setting("auto_punctuation"), True,
+            (t("auto_punctuation"), lambda: self.toggle_setting("auto_punctuation"), True,
              self.settings["auto_punctuation"]),
-            ("أوامر الترقيم المنطوقة", lambda: self.toggle_setting("spoken_punctuation"), True,
+            (t("spoken_punctuation"), lambda: self.toggle_setting("spoken_punctuation"), True,
              self.settings["spoken_punctuation"]),
-            ("التشغيل مع Windows", self.toggle_startup, True, startup.is_enabled()),
+            (t("startup"), self.toggle_startup, True, startup.is_enabled()),
             None,
-            ("فتح الإعدادات", lambda: self.open_path(config.SETTINGS_PATH), True),
-            ("فتح السجلّ", lambda: self.open_path(config.LOG_PATH), True),
+            (t("switch_language"), self.toggle_ui_language, True),
+            (t("open_settings"), lambda: self.open_path(config.SETTINGS_PATH), True),
+            (t("open_log"), lambda: self.open_path(config.LOG_PATH), True),
             None,
-            ("خروج", self.exit, True),
+            (t("exit"), self.exit, True),
         ]
 
     def run(self):
         hotkey = self.settings["hotkey"]
         self.menu = TrayMenu()
         self.icon = TrayIcon(
-            "AltScribo", self.base_icon, "AltScribo - أداة الإملاء الصوتي",
-            on_right_click=lambda: self.menu.show(self.menu_items()),
+            "AltScribo", self.base_icon, t("tip_idle"),
+            on_right_click=lambda: self.menu.show(self.menu_items(), i18n.is_rtl()),
         )
 
         try:

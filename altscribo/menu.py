@@ -31,7 +31,7 @@ def _is_dark_theme():
 
 
 class TrayMenu:
-    """ قائمة منبثقة مخصصة بخط أكبر وتخطيط من اليمين إلى اليسار.
+    """ قائمة منبثقة مخصصة بخط أكبر وتخطيط من اليمين إلى اليسار (أو العكس للإنجليزية).
     تعمل في خيط Tk خاص؛ show(items) آمنة للاستدعاء من أي خيط.
     items: قائمة عناصر (label, callback, enabled[, checked]) أو None للفاصل. """
 
@@ -47,8 +47,8 @@ class TrayMenu:
         threading.Thread(target=self._loop, daemon=True).start()
         self._ready.wait(5)
 
-    def show(self, items):
-        self._requests.put(items)
+    def show(self, items, rtl=True):
+        self._requests.put((items, rtl))
 
     # ---------- خيط Tk ----------
     def _loop(self):
@@ -61,8 +61,8 @@ class TrayMenu:
     def _poll(self):
         try:
             while True:
-                items = self._requests.get_nowait()
-                self._open(items)
+                items, rtl = self._requests.get_nowait()
+                self._open(items, rtl)
         except queue.Empty:
             pass
         self._root.after(40, self._poll)
@@ -75,7 +75,7 @@ class TrayMenu:
                 pass
             self._popup = None
 
-    def _open(self, items):
+    def _open(self, items, rtl):
         self._close()
         theme = DARK if _is_dark_theme() else LIGHT
         popup = tk.Toplevel(self._root)
@@ -96,7 +96,7 @@ class TrayMenu:
             label, callback, enabled = item[:3]
             checked = item[3] if len(item) > 3 else None
             rows += 1
-            self._row(body, theme, label, callback, enabled, checked)
+            self._row(body, theme, rtl, label, callback, enabled, checked)
         tk.Frame(body, bg=theme["bg"], height=self.PAD).pack(fill="x")
 
         popup.update_idletasks()
@@ -122,7 +122,8 @@ class TrayMenu:
         except tk.TclError:
             self._popup = None
 
-    def _row(self, parent, theme, label, callback, enabled, checked=None):
+    def _row(self, parent, theme, rtl, label, callback, enabled, checked=None):
+        side, anchor = ("right", "e") if rtl else ("left", "w")
         fg = theme["fg"] if enabled else theme["muted"]
         font = (FONT_FAMILY, 9, "bold") if callback is None and not enabled else (FONT_FAMILY, 10)
         row = tk.Frame(parent, bg=theme["bg"], height=self.ROW_H)
@@ -131,12 +132,12 @@ class TrayMenu:
         labels = []
         if checked is not None:
             mark = tk.Label(row, text="✓" if checked else "", bg=theme["bg"], fg=fg,
-                            font=(FONT_FAMILY, 10, "bold"), width=2, anchor="e")
-            mark.pack(side="right", fill="y", padx=(0, 8))
+                            font=(FONT_FAMILY, 10, "bold"), width=2, anchor=anchor)
+            mark.pack(side=side, fill="y", padx=(0, 8) if rtl else (8, 0))
             labels.append(mark)
-        text = tk.Label(row, text=_rtl(label), bg=theme["bg"], fg=fg, font=font, anchor="e",
-                        justify="right", padx=12 if checked is None else 4)
-        text.pack(side="right", fill="both", expand=True)
+        text = tk.Label(row, text=_rtl(label), bg=theme["bg"], fg=fg, font=font, anchor=anchor,
+                        justify=side, padx=12 if checked is None else 4)
+        text.pack(side=side, fill="both", expand=True)
         labels.append(text)
         if not enabled:
             return

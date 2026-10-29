@@ -7,6 +7,7 @@ import speech_recognition as sr
 
 from . import punctuation
 from .config import MODELS_DIR, log
+from .i18n import t
 
 # نص تمهيدي عربي مُرقَّم يشجّع Whisper على وضع علامات الترقيم
 WHISPER_PROMPT = "مرحبًا، كيف حالك؟ هذا نص عربي مكتوب بعلامات ترقيم صحيحة."
@@ -54,7 +55,7 @@ class GoogleEngine:
         try:
             return self.recognizer.recognize_google(audio, language=self.language)
         except sr.UnknownValueError:
-            raise NoSpeech("لم يتم التعرف على كلام واضح")
+            raise NoSpeech(t("no_speech"))
         except sr.RequestError as e:
             raise NetworkError(str(e))
 
@@ -83,12 +84,12 @@ class WhisperEngine:
             try:
                 self._model = WhisperModel(self.model_name, local_files_only=True, **kwargs)
             except Exception:
-                self.notify(f"جارٍ تنزيل نموذج Whisper ({self.model_name}) لأول مرة، قد يستغرق دقائق")
+                self.notify(t("whisper_downloading", model=self.model_name))
                 try:
                     self._model = WhisperModel(self.model_name, **kwargs)
                 except Exception as e:
                     raise EngineError(f"تعذّر تحميل نموذج Whisper: {e}")
-                self.notify("اكتمل تنزيل نموذج Whisper، صار التعرف يعمل بلا إنترنت")
+                self.notify(t("whisper_downloaded"))
             log.info("حُمّل نموذج Whisper: %s", self.model_name)
             return self._model
 
@@ -124,12 +125,12 @@ class Transcriber:
             self.whisper.load()
         except EngineError as e:
             log.error("%s", e)
-            self.whisper.notify("تعذّر تحميل نموذج Whisper، راجع السجلّ")
+            self.whisper.notify(t("whisper_load_failed"))
 
     def transcribe(self, frames):
         """ يحوّل المقاطع إلى نص؛ يرمي NoSpeech أو NetworkError أو EngineError """
         if not frames:
-            raise NoSpeech("لم يتم تسجيل أي صوت")
+            raise NoSpeech(t("no_audio"))
 
         recording = np.concatenate(frames, axis=0)
 
@@ -142,7 +143,7 @@ class Transcriber:
         engine = self.engine
         text = (engine.transcribe(recording) or "").strip()
         if not text:
-            raise NoSpeech("لم يتم التعرف على كلام واضح")
+            raise NoSpeech(t("no_speech"))
         text = punctuation.process(
             text,
             spoken=self.settings["spoken_punctuation"],
