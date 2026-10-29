@@ -10,8 +10,18 @@
 - البنية ثابتة: `app.py`، `recorder.py`، `transcriber.py`، `punctuation.py`، `injector.py`، `menu.py`، `config.py`، `startup.py`. أضف بجانب الموجود، ولا تعد الهيكلة ولا تغيّر أسماء الملفات أو الدوال الحالية.
 - لا تلمس إلا الملفات المذكورة في البند.
 - أي إعداد جديد يُضاف إلى `DEFAULTS` في `config.py` مع قيمة افتراضية تُبقي السلوك الحالي كما هو، ويمر عبر `_valid` كبقية الإعدادات.
-- نصوص الواجهة والإشعارات والتعليقات بالعربية، والأرقام غربية (0-9) دائمًا.
+- الأرقام غربية (0-9) دائمًا، والتعليقات في الكود بالعربية.
 - الإشعار عبر `self.notify(...)`، والسجل عبر `log` من `config.py`.
+
+### الواجهة ثنائية اللغة (إلزامي في كل بند)
+- التطبيق بلا نوافذ. "الواجهة" هي قائمة الأيقونة، والإشعارات، والنص الذي يظهر عند تمرير الماوس فوق الأيقونة. هذه كلها تتبع لغة الواجهة (`ui_language`: `auto` أو `ar` أو `en`).
+- **كل نص يراه المستخدم** يُضاف مفتاحًا في `STRINGS` داخل `altscribo/i18n.py` بالصيغة `"key": ("نص عربي", "English text")`، ويُستدعى بـ `t("key")` أو `t("key", name=value)` للقيم المتغيرة. ممنوع كتابة نص ظاهر مباشرة في الكود.
+- `altscribo/i18n.py` مسموح بتعديله في **كل** بند، لكن لإضافة مفاتيح إلى `STRINGS` فقط.
+- رسائل السجل (`log.*`) تبقى بالعربية ولا تُترجم.
+- عرض القائمة 280 بكسل. اجعل النص الإنجليزي قصيرًا (نحو 24 حرفًا كحد أقصى) حتى لا ينقطع.
+- `TrayMenu.show(items, rtl)` يستقبل اتجاه القائمة، ويُمرَّر له دائمًا `i18n.is_rtl()`.
+- **لغة الواجهة ≠ لغة التعرف على الكلام.** `ui_language` للواجهة فقط، و`language` (مثل `ar-SA`) لمحرك التعرف. لا تربط بينهما.
+- لا تغيّر شكل القائمة ولا ألوانها في `menu.py`، فتصميم Fluent عمل منفصل سيقوم به المالك.
 
 ---
 
@@ -20,7 +30,7 @@
 **المشكلة:** الاختصار يتوقف أحيانًا عن العمل حتى يُعاد تشغيل البرنامج.
 **السبب:** `keyboard.add_hotkey(hotkey, ..., suppress=True)` في `app.py` (داخل `App.run`) يستخدم خطاف `WH_KEYBOARD_LL`، ويزيله Windows بصمت إذا تأخر الرد عن `LowLevelHooksTimeout`، أو بعد السكون أو قفل الشاشة.
 
-**الملفات:** `altscribo/app.py`، `altscribo/injector.py`.
+**الملفات:** `altscribo/app.py`، `altscribo/injector.py`، `altscribo/i18n.py`.
 
 **التنفيذ:**
 - دالة صغيرة تحوّل نص `settings["hotkey"]` (مثل `"alt+s"`) إلى `(modifiers, vk)`:
@@ -29,7 +39,8 @@
   - إن لم تُفهم الصيغة: `log.error` وإشعار، ولا يُسجَّل اختصار.
 - خيط `daemon` يستدعي `user32.RegisterHotKey(None, 1, mods, vk)`، ثم يدخل حلقة `GetMessageW`، وعند وصول `WM_HOTKEY (0x0312)` يستدعي `self.toggle_recording()`.
   - **يجب** أن يكون `RegisterHotKey` و`GetMessageW` في الخيط نفسه.
-  - إن فشل `RegisterHotKey` (لأن برنامجًا آخر يحجز الاختصار): `log.error` وإشعار "الاختصار <x> محجوز لبرنامج آخر".
+  - إن فشل `RegisterHotKey` (لأن برنامجًا آخر يحجز الاختصار): `log.error` وإشعار عبر `t("hotkey_taken", hotkey=...)` بالنصين "الاختصار {hotkey} محجوز لبرنامج آخر" / "The shortcut {hotkey} is used by another app". وإن لم تُفهم الصيغة: `t("hotkey_invalid", hotkey=...)`.
+  - **ملاحظة:** بدأ Hermes هذا البند ثم أُوقف، وتعديلاته غير المحفوظة موجودة في `app.py` و`injector.py`. راجعها، وأكملها بحيث تمر نصوصها عبر `t()`، ثم احفظها في commit.
 - استبدال سطر `keyboard.add_hotkey(...)` بتشغيل هذا الخيط، مع الإبقاء على رسالة السجل "تم تفعيل الاختصار العام".
 - في `injector.py`: استبدال `keyboard.is_pressed("alt")` بـ `ctypes.windll.user32.GetAsyncKeyState(0x12) & 0x8000`. تبقى `keyboard.send("ctrl+v")` كما هي.
 
@@ -43,7 +54,7 @@
 ## البند 2: سجل النصوص وإعادة لصق آخر نص
 
 **الهدف:** ألا يضيع الكلام إن فشل اللصق، كأن ينتقل التركيز إلى نافذة أخرى.
-**الملفات:** `altscribo/app.py`، `altscribo/config.py`.
+**الملفات:** `altscribo/app.py`، `altscribo/config.py`، `altscribo/i18n.py`.
 
 **التنفيذ:**
 - `HISTORY_PATH = os.path.join(DATA_DIR, "history.json")` في `config.py`.
@@ -57,7 +68,7 @@
 
 ## البند 3: التحويل التلقائي إلى Whisper عند انقطاع الإنترنت
 
-**الملف:** `altscribo/transcriber.py`.
+**الملفات:** `altscribo/transcriber.py`، `altscribo/i18n.py`.
 
 **التنفيذ:** في `Transcriber.transcribe`: إن كان المحرك Google ورمى `NetworkError`، وكان `whisper_available()` صحيحًا، تُعاد المحاولة بـ `self.whisper` على التسجيل نفسه (بعد التضخيم)، مع إشعار "انقطع الإنترنت، استُخدم Whisper المحلي". ويُطبَّق الترقيم بحسب المحرك الذي نجح فعلًا (`punctuated`). وإن لم يكن Whisper متاحًا يبقى السلوك الحالي.
 
@@ -69,7 +80,7 @@
 
 ## البند 4: اختيار الميكروفون من القائمة
 
-**الملفات:** `altscribo/recorder.py`، `altscribo/app.py`، `altscribo/config.py`، و`altscribo/menu.py` فقط إن لم تدعم القائمة الفرعية.
+**الملفات:** `altscribo/recorder.py`، `altscribo/app.py`، `altscribo/config.py`، `altscribo/i18n.py`، و`altscribo/menu.py` فقط لإضافة القائمة الفرعية إن لم تكن مدعومة، مع احترام `rtl`.
 
 **التنفيذ:**
 - إعداد `input_device` في `DEFAULTS`، قيمته `""` وتعني الجهاز الافتراضي. يُخزَّن اسم الجهاز لا رقمه، لأن الأرقام تتغير.
@@ -83,7 +94,7 @@
 
 ## البند 5: وضع "اضغط مع الاستمرار" (push-to-talk)
 
-**يعتمد على البند 1.** **الملفات:** `altscribo/app.py`، `altscribo/config.py`.
+**يعتمد على البند 1.** **الملفات:** `altscribo/app.py`، `altscribo/config.py`، `altscribo/i18n.py`.
 
 **التنفيذ:**
 - إعداد `push_to_talk` (افتراضيًا `false`)، وبند في القائمة لتفعيله أو تعطيله.
@@ -107,12 +118,14 @@
 
 ---
 
-## البند 7: تبديل سريع بين العربية والإنجليزية
+## البند 7: تبديل لغة التعرف على الكلام (عربي/إنجليزي)
 
-**الملفات:** `altscribo/app.py`، `altscribo/transcriber.py`.
+> هذا غير بند "English / العربية" الموجود في القائمة، فذاك يغيّر لغة الواجهة فقط. هذا البند يغيّر اللغة التي يُتعرَّف بها على الكلام المنطوق.
+
+**الملفات:** `altscribo/app.py`، `altscribo/transcriber.py`، `altscribo/i18n.py`.
 
 **التنفيذ:**
-- بند في القائمة "اللغة: العربية / English" يبدّل `language` بين `ar-SA` و`en-US`، ويُحفظ عبر `save_settings`.
+- بند في القائمة نصّه عبر `t()`، مثل "لغة الكلام: العربية" / "Speech: Arabic"، يبدّل `language` بين `ar-SA` و`en-US`، ويُحفظ عبر `save_settings`. لا يغيّر `ui_language`.
 - تحديث `GoogleEngine.language` و`WhisperEngine.language` (أول جزء من الرمز، مثل `en`) دون إعادة تحميل نموذج Whisper.
 - في الإنجليزية: لا يُطبَّق الترقيم العربي التلقائي ولا الأوامر المنطوقة العربية، أما `normalize` فيبقى.
 
@@ -122,7 +135,7 @@
 
 ## البند 8: فحص التحديثات من GitHub (إشعار فقط)
 
-**الملف:** `altscribo/app.py`.
+**الملفات:** `altscribo/app.py`، `altscribo/i18n.py`.
 
 **التنفيذ:**
 - عند التشغيل، في خيط daemon: طلب `GET https://api.github.com/repos/alimwork85-web/AltScribo/releases/latest` عبر `urllib.request`، بمهلة 5 ثوانٍ.
