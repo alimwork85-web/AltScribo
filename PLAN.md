@@ -40,7 +40,7 @@
 - خيط `daemon` يستدعي `user32.RegisterHotKey(None, 1, mods, vk)`، ثم يدخل حلقة `GetMessageW`، وعند وصول `WM_HOTKEY (0x0312)` يستدعي `self.toggle_recording()`.
   - **يجب** أن يكون `RegisterHotKey` و`GetMessageW` في الخيط نفسه.
   - إن فشل `RegisterHotKey` (لأن برنامجًا آخر يحجز الاختصار): `log.error` وإشعار عبر `t("hotkey_taken", hotkey=...)` بالنصين "الاختصار {hotkey} محجوز لبرنامج آخر" / "The shortcut {hotkey} is used by another app". وإن لم تُفهم الصيغة: `t("hotkey_invalid", hotkey=...)`.
-  - **ملاحظة:** بدأ Hermes هذا البند ثم أُوقف، وتعديلاته غير المحفوظة موجودة في `app.py` و`injector.py`. راجعها، وأكملها بحيث تمر نصوصها عبر `t()`، ثم احفظها في commit.
+  - **الحالة:** التنفيذ محفوظ في commit `2c65fa1`، وبقي نقل إشعاريه العربيين إلى `t()` (التفاصيل في AGENTS.md، قسم "نقطة البداية").
 - استبدال سطر `keyboard.add_hotkey(...)` بتشغيل هذا الخيط، مع الإبقاء على رسالة السجل "تم تفعيل الاختصار العام".
 - في `injector.py`: استبدال `keyboard.is_pressed("alt")` بـ `ctypes.windll.user32.GetAsyncKeyState(0x12) & 0x8000`. تبقى `keyboard.send("ctrl+v")` كما هي.
 
