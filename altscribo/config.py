@@ -8,6 +8,7 @@ APP_NAME = "AltScribo"
 
 DEFAULTS = {
     "hotkey": "alt+f9",
+    "hotkey_label": "",
     "language": "ar-SA",
     "timeout_seconds": 15,
     "max_gain": 4.0,

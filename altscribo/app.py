@@ -343,10 +343,12 @@ class App:
 
     def menu_items(self):
         hotkey = self.settings["hotkey"]
+        # ما يُعرض في القائمة قد يختلف عن الاختصار المسجّل (لوحة تحتاج Fn للوصول إلى F9)
+        label = self.settings.get("hotkey_label") or hotkey
         toggle = t("stop_recording") if self.recorder.is_recording else t("start_recording")
         has_history = bool(load_history())
         return [
-            (f"AltScribo {__version__}  ({hotkey})", None, False),
+            (f"AltScribo {__version__}  ({label})", None, False),
             None,
             (toggle, self.toggle_recording, True),
             None,

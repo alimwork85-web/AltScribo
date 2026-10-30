@@ -2,7 +2,12 @@
 
 Voice dictation for Windows: press a hotkey, speak, and the text is typed into whatever window you are in. Bilingual (Arabic/English) interface, a system-wide hotkey that survives screen lock, a fully local Whisper engine, and an on-screen recording indicator.
 
-**Current version: 1.5.4** — Developer: **Ali Alhumedi**
+**Current version: 1.5.5** — Developer: **Ali Alhumedi**
+
+## What's new in 1.5.5
+
+- New optional setting `hotkey_label`: the tray menu title shows this text instead of the registered shortcut, for laptops whose `F9` is a media key (e.g. `"alt+fn+f9"`). The registered shortcut itself does not change.
+- **Laptops:** if `F1`–`F12` on your keyboard are media keys, hold `Fn` while pressing the hotkey, or enable Fn-Lock. `Fn` is handled by the hardware and never reaches the app, so it is not part of the shortcut.
 
 ## What's new in 1.5.4
 
@@ -38,7 +43,7 @@ Voice dictation for Windows: press a hotkey, speak, and the text is typed into w
 
 ## Download and run
 
-Download `AltScribo-v1.5.4-windows.zip` from the [releases page](https://github.com/alimwork85-web/AltScribo/releases), unzip it anywhere, then run `AltScribo.exe`. The icon appears in the notification area (possibly inside the hidden-icons arrow).
+Download `AltScribo-v1.5.5-windows.zip` from the [releases page](https://github.com/alimwork85-web/AltScribo/releases), unzip it anywhere, then run `AltScribo.exe`. The icon appears in the notification area (possibly inside the hidden-icons arrow).
 
 To start it with Windows: choose "Start with Windows" in the tray menu, and choose it again to undo.
 
@@ -105,6 +110,7 @@ Tray menu → "Open settings", or edit `%APPDATA%\AltScribo\settings.json`:
 | Setting | Meaning | Default |
 |---|---|---|
 | `hotkey` | global shortcut | `alt+f9` |
+| `hotkey_label` | text shown for the shortcut in the tray menu (empty = show `hotkey`), e.g. `alt+fn+f9` | `""` |
 | `language` | speech recognition language | `ar-SA` |
 | `timeout_seconds` | service timeout in seconds | `15` |
 | `max_gain` | maximum amplification for quiet audio | `4.0` |
@@ -173,7 +179,12 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 أداة إملاء صوتي لويندوز: تضغط اختصارًا، تتكلم، فيُكتب الكلام في أي نافذة تعمل فيها. بواجهة عربية/إنجليزية، واختصار عام لا يتوقف بعد قفل الشاشة، ومحرك Whisper محلي، ومؤشر عائم على الشاشة.
 
-**الإصدار الحالي: 1.5.4** — المطوّر: **علي الحميدي (Ali Alhumedi)**
+**الإصدار الحالي: 1.5.5** — المطوّر: **علي الحميدي (Ali Alhumedi)**
+
+## الجديد في 1.5.5
+
+- إعداد اختياري جديد `hotkey_label`: يعرض عنوان القائمة هذا النص بدل الاختصار المسجّل، للوحات التي يكون فيها `F9` مفتاح وسائط (مثل `"alt+fn+f9"`). الاختصار المسجّل نفسه لا يتغير.
+- **اللابتوبات:** إن كانت `F1`–`F12` في لوحتك مفاتيح وسائط، فاضغط `Fn` مع الاختصار أو فعّل Fn-Lock. `Fn` تعالجها اللوحة ولا تصل إلى البرنامج، فليست جزءًا من الاختصار.
 
 ## الجديد في 1.5.4
 
@@ -209,7 +220,7 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 ## التنزيل والتشغيل
 
-نزّل الملف `AltScribo-v1.5.4-windows.zip` من صفحة [الإصدارات](https://github.com/alimwork85-web/AltScribo/releases)، وفكّ ضغطه في أي مجلد، ثم شغّل `AltScribo.exe`. ستظهر الأيقونة في شريط المهام (قد تكون داخل السهم الصغير).
+نزّل الملف `AltScribo-v1.5.5-windows.zip` من صفحة [الإصدارات](https://github.com/alimwork85-web/AltScribo/releases)، وفكّ ضغطه في أي مجلد، ثم شغّل `AltScribo.exe`. ستظهر الأيقونة في شريط المهام (قد تكون داخل السهم الصغير).
 
 للتشغيل مع Windows تلقائيًا: اختر «التشغيل مع Windows» من قائمة الأيقونة، واختره مرة أخرى للإلغاء.
 
@@ -276,6 +287,7 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 | الإعداد | الوصف | الافتراضي |
 |---|---|---|
 | `hotkey` | الاختصار العام | `alt+f9` |
+| `hotkey_label` | نص يُعرض للاختصار في قائمة الأيقونة (فارغ = يُعرض `hotkey`)، مثل `alt+fn+f9` | `""` |
 | `language` | لغة التعرف على الكلام | `ar-SA` |
 | `timeout_seconds` | مهلة انتظار الخدمة بالثواني | `15` |
 | `max_gain` | أقصى تضخيم للصوت الخافت | `4.0` |
