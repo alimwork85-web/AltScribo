@@ -7,9 +7,9 @@ Voice dictation for Windows: press a hotkey, speak, and the text is typed into w
 ## How it works
 
 1. Put the caret wherever you want to write.
-2. Press `Alt+S` — a high beep plays and the tray icon turns red: recording started.
+2. Press `Alt+F9` — a high beep plays and the tray icon turns red: recording started.
 3. Speak, with no time limit.
-4. Press `Alt+S` again — a low beep, and the text appears at the caret a moment later.
+4. Press `Alt+F9` again — a low beep, and the text appears at the caret a moment later.
 
 ## Features
 
@@ -94,7 +94,7 @@ Tray menu → "Open settings", or edit `%APPDATA%\AltScribo\settings.json`:
 
 | Setting | Meaning | Default |
 |---|---|---|
-| `hotkey` | global shortcut | `alt+s` |
+| `hotkey` | global shortcut | `alt+f9` |
 | `language` | speech recognition language | `ar-SA` |
 | `timeout_seconds` | service timeout in seconds | `15` |
 | `max_gain` | maximum amplification for quiet audio | `4.0` |
@@ -168,9 +168,9 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 ## كيف تعمل
 
 1. ضع المؤشر في أي مكان تريد الكتابة فيه.
-2. اضغط `Alt+S`، فتسمع نغمة حادة وتتحول الأيقونة إلى أيقونة بنقطة حمراء: بدأ التسجيل.
+2. اضغط `Alt+F9`، فتسمع نغمة حادة وتتحول الأيقونة إلى أيقونة بنقطة حمراء: بدأ التسجيل.
 3. تكلّم دون أي حد زمني.
-4. اضغط `Alt+S` مرة ثانية، فتسمع نغمة منخفضة، ثم يظهر النص في مكان المؤشر خلال لحظات.
+4. اضغط `Alt+F9` مرة ثانية، فتسمع نغمة منخفضة، ثم يظهر النص في مكان المؤشر خلال لحظات.
 
 ## المزايا
 
@@ -255,7 +255,7 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 | الإعداد | الوصف | الافتراضي |
 |---|---|---|
-| `hotkey` | الاختصار العام | `alt+s` |
+| `hotkey` | الاختصار العام | `alt+f9` |
 | `language` | لغة التعرف على الكلام | `ar-SA` |
 | `timeout_seconds` | مهلة انتظار الخدمة بالثواني | `15` |
 | `max_gain` | أقصى تضخيم للصوت الخافت | `4.0` |
