@@ -41,10 +41,10 @@ Bilingual (Arabic/English) interface, a system-wide hotkey that survives screen 
 
 ## ✨ Features
 
-- **System-wide hotkey:** works in any program and never leaks the `S` keystroke into the focused window. It uses the Windows `RegisterHotKey` API instead of a low-level hook, so it keeps working after `Win+L`, sleep, or long idle. If another program already owns the shortcut, you get a clear notification instead of silent failure.
+- **System-wide hotkey:** works in any program and never leaks a letter into the focused window. It uses the Windows `RegisterHotKey` API instead of a low-level hook, so it keeps working after `Win+L`, sleep, or long idle. If another program already owns the shortcut, you get a clear notification instead of silent failure.
 - **Bilingual interface:** the tray menu, notifications and tooltips follow Windows' language, or you can force Arabic or English from the menu.
 - **On-screen indicator:** a small floating capsule shows recording state with a blinking dot and a timer, then "Typing…", then `OFF` — without ever taking focus from the window you are typing in.
-- **Text history:** every recognized text is saved (last 20) to `history.json`, so nothing is lost if the paste lands in the wrong window. "Paste last text" re-inserts the most recent one.
+- **Text history:** every recognized text is saved (last 20) to `history.json`, so nothing is lost if the paste lands in the wrong window. "Paste last text" copies the most recent one to the clipboard for you to `Ctrl+V`.
 - **Automatic offline fallback:** if Google cannot be reached and Whisper is installed, the same recording is transcribed locally and you are told so.
 - **Push-to-talk:** optional mode where recording runs only while the hotkey is held down.
 - **Auto-stop on silence:** optionally stop and transcribe after N seconds of silence.
