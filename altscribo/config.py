@@ -7,7 +7,7 @@ from logging.handlers import RotatingFileHandler
 APP_NAME = "AltScribo"
 
 DEFAULTS = {
-    "hotkey": "alt+s",
+    "hotkey": "alt+f9",
     "language": "ar-SA",
     "timeout_seconds": 15,
     "max_gain": 4.0,
