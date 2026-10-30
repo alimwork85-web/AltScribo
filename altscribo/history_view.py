@@ -3,8 +3,9 @@ import threading
 import tkinter as tk
 import tkinter.font as tkfont
 
+import pyperclip
+
 from .i18n import is_rtl, t
-from .injector import copy_text
 from .menu import DARK, LIGHT, FONT_FAMILY, _is_dark_theme, _rtl
 
 _lock = threading.Lock()
@@ -43,23 +44,13 @@ def build_window(root, items):
                          selectbackground=theme["hover"], selectforeground=theme["fg"],
                          borderwidth=0, highlightthickness=0, activestyle="none",
                          justify=side)
-    scroll = tk.Scrollbar(body, command=listbox.yview)
-    listbox.configure(yscrollcommand=scroll.set)
     listbox.pack(side=side, fill="both", expand=True)
-    scroll.pack(side="left" if rtl else "right", fill="y")
 
     label_font = tkfont.Font(root=root, font=(FONT_FAMILY, 10))
-
-    def fill():
-        """ يعيد تعبئة القائمة مقصوصة على عرضها الحالي بالبكسل """
-        width = max(listbox.winfo_width() - 24, 60)
-        listbox.delete(0, "end")
-        for item in items:
-            listbox.insert("end", _rtl(_fit(label_font, _preview(item), width)))
-
-    root.update_idletasks()
-    fill()
-    listbox.bind("<Configure>", lambda _: fill())
+    # ponytail: عرض قصّ ثابت (النافذة 560) — لا إعادة قصّ عند تغيير الحجم، راجعها إن صارت تُكبَّر كثيرًا
+    width = 520
+    for item in items:
+        listbox.insert("end", _rtl(_fit(label_font, _preview(item), width)))
     listbox.selection_set(len(items) - 1)
 
     status = tk.Label(root, text="", bg=theme["bg"], fg=theme["muted"],
@@ -72,7 +63,7 @@ def build_window(root, items):
         if not selected:
             return
         try:
-            copy_text(items[selected[0]]["text"])
+            pyperclip.copy(items[selected[0]]["text"])
         except Exception:
             status.configure(text=_rtl(t("paste_failed")))
             return
@@ -87,20 +78,17 @@ def build_window(root, items):
 
 
 def show(items):
-    """ يفتح النافذة في خيط منفصل، أو يرفع المفتوحة. يعيد False إن كان السجل فارغًا """
-    if not items:
-        return False
+    """ يفتح النافذة في خيط منفصل، أو يرفع المفتوحة """
     global _root
     with _lock:
         if _root is not None:
             try:
                 _root.lift()
                 _root.focus_force()
-                return True
+                return
             except tk.TclError:
                 _root = None
     threading.Thread(target=_run, args=(list(items),), daemon=True).start()
-    return True
 
 
 def _run(items):

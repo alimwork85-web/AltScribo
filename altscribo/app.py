@@ -9,6 +9,7 @@ import urllib.request
 import winsound
 
 import keyboard
+import pyperclip
 import pystray
 from PIL import Image, ImageDraw
 from pystray._util import win32
@@ -16,7 +17,7 @@ from pystray._util import win32
 from . import __version__, config, history_view, i18n, startup
 from .config import log
 from .i18n import t
-from .injector import copy_text, paste_text
+from .injector import paste_text
 from .menu import TrayMenu
 from .overlay import Overlay
 from .recorder import Recorder, input_devices
@@ -247,11 +248,7 @@ class App:
 
     def open_history(self):
         """ يفتح سجل النصوص في نافذة قابلة للنسخ بدل ملف JSON في محرر """
-        items = load_history()
-        if not items:
-            self.notify(t("history_empty"))
-            return
-        history_view.show(items)
+        history_view.show(load_history())
 
     def repaste_last(self):
         """ ينسخ آخر نص إلى الحافظة؛ اللصق يدوي لأن القائمة تسرق التركيز """
@@ -260,7 +257,7 @@ class App:
             self.notify(t("history_empty"))
             return
         try:
-            copy_text(items[-1]["text"])
+            pyperclip.copy(items[-1]["text"])
         except Exception:
             log.exception("فشل نسخ آخر نص")
             self.notify(t("paste_failed"))
