@@ -13,10 +13,10 @@ import pystray
 from PIL import Image, ImageDraw
 from pystray._util import win32
 
-from . import __version__, config, i18n, startup
+from . import __version__, config, history_view, i18n, startup
 from .config import log
 from .i18n import t
-from .injector import paste_text
+from .injector import copy_text, paste_text
 from .menu import TrayMenu
 from .overlay import Overlay
 from .recorder import Recorder, input_devices
@@ -245,17 +245,28 @@ class App:
         except OSError as e:
             log.error("تعذّر فتح %s: %s", path, e)
 
+    def open_history(self):
+        """ يفتح سجل النصوص في نافذة قابلة للنسخ بدل ملف JSON في محرر """
+        items = load_history()
+        if not items:
+            self.notify(t("history_empty"))
+            return
+        history_view.show(items)
+
     def repaste_last(self):
-        """ يعيد لصق آخر نص مُعرَّف عليه من سجل النصوص """
+        """ ينسخ آخر نص إلى الحافظة؛ اللصق يدوي لأن القائمة تسرق التركيز """
         items = load_history()
         if not items:
             self.notify(t("history_empty"))
             return
         try:
-            paste_text(items[-1]["text"])
+            copy_text(items[-1]["text"])
         except Exception:
-            log.exception("فشل لصق آخر نص")
+            log.exception("فشل نسخ آخر نص")
             self.notify(t("paste_failed"))
+            return
+        log.info("نُسخ آخر نص إلى الحافظة (%s حرفًا)", len(items[-1]["text"]))
+        self.notify(t("repasted"))
 
     def set_engine(self, name):
         if self.settings["engine"] == name:
@@ -343,7 +354,7 @@ class App:
             (toggle, self.toggle_recording, True),
             None,
             (t("repaste_last"), self.repaste_last, has_history),
-            (t("open_history"), lambda: self.open_path(config.HISTORY_PATH), True),
+            (t("open_history"), self.open_history, True),
             None,
             (t("engine_google"), lambda: self.set_engine("google"), True,
              self.settings["engine"] == "google"),

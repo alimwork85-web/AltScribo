@@ -5,6 +5,11 @@ import keyboard
 import pyperclip
 
 
+def copy_text(text):
+    """ ينسخ النص إلى الحافظة بلا لصق (لا يعتمد على النافذة النشطة) """
+    pyperclip.copy(text)
+
+
 def paste_text(text):
     """ لصق النص عبر الحافظة ثم إرجاع الحافظة القديمة إن كانت نصًا """
     try:
