@@ -2,7 +2,14 @@
 
 Voice dictation for Windows: press a hotkey, speak, and the text is typed into whatever window you are in. Bilingual (Arabic/English) interface, a system-wide hotkey that survives screen lock, a fully local Whisper engine, and an on-screen recording indicator.
 
-**Current version: 1.4.0** — Developer: **Ali Alhumedi**
+**Current version: 1.5.4** — Developer: **Ali Alhumedi**
+
+## What's new in 1.5.4
+
+- Default shortcut is now `Alt+F9` instead of `Alt+S`, so pressing the hotkey can no longer type a letter into the focused window.
+- "Open text history" now opens a small window with the last 20 texts: select one and press **Copy** (or double-click it).
+- "Paste last text" now **copies** the text to the clipboard and tells you, so `Ctrl+V` works no matter which window has focus.
+- The history window has a dark title bar matching the app.
 
 ## How it works
 
@@ -31,7 +38,7 @@ Voice dictation for Windows: press a hotkey, speak, and the text is typed into w
 
 ## Download and run
 
-Download `AltScribo-v1.4.0-windows.zip` from the [releases page](https://github.com/alimwork85-web/AltScribo/releases), unzip it anywhere, then run `AltScribo.exe`. The icon appears in the notification area (possibly inside the hidden-icons arrow).
+Download `AltScribo-v1.5.4-windows.zip` from the [releases page](https://github.com/alimwork85-web/AltScribo/releases), unzip it anywhere, then run `AltScribo.exe`. The icon appears in the notification area (possibly inside the hidden-icons arrow).
 
 To start it with Windows: choose "Start with Windows" in the tray menu, and choose it again to undo.
 
@@ -58,7 +65,10 @@ Tray menu → "Microphone" → pick a device, or "Default". The device is stored
 
 ## Text history
 
-Every successful recognition is appended to `%APPDATA%\AltScribo\history.json` (last 20 entries, atomic writes; a corrupted file is never overwritten). Menu items: "Paste last text" (disabled when empty) and "Open text history".
+Every successful recognition is appended to `%APPDATA%\AltScribo\history.json` (last 20 entries, atomic writes; a corrupted file is never overwritten). Menu items:
+
+- **Paste last text** — copies the latest text to the clipboard and notifies you; paste it yourself with `Ctrl+V`. Copying does not depend on which window has focus.
+- **Open text history** — a small window listing the last 20 texts. Select one and press **Copy** (or double-click it) to copy the full text, not the shortened preview. The window has no scrollbar; the mouse wheel scrolls the list.
 
 ## Offline recognition (Whisper)
 
@@ -163,7 +173,14 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 أداة إملاء صوتي لويندوز: تضغط اختصارًا، تتكلم، فيُكتب الكلام في أي نافذة تعمل فيها. بواجهة عربية/إنجليزية، واختصار عام لا يتوقف بعد قفل الشاشة، ومحرك Whisper محلي، ومؤشر عائم على الشاشة.
 
-**الإصدار الحالي: 1.4.0** — المطوّر: **Ali Alhumedi**
+**الإصدار الحالي: 1.5.4** — المطوّر: **علي الحميدي (Ali Alhumedi)**
+
+## الجديد في 1.5.4
+
+- الاختصار الافتراضي صار `Alt+F9` بدل `Alt+S`، فلم يبقَ الاختصار قادرًا على كتابة حرف في النافذة التي تعمل فيها.
+- «فتح سجل النصوص» يفتح نافذة صغيرة بآخر 20 نصًا: اختر نصًا واضغط **«نسخ»** أو انقر عليه نقرًا مزدوجًا.
+- «أعد لصق آخر نص» صار **ينسخ** النص إلى الحافظة ويُشعرك بذلك، فتلصقه أنت بـ`Ctrl+V` أيًّا كانت النافذة النشطة.
+- نافذة السجل بشريط عنوان داكن يطابق التطبيق.
 
 ## كيف تعمل
 
@@ -192,7 +209,7 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 ## التنزيل والتشغيل
 
-نزّل الملف `AltScribo-v1.4.0-windows.zip` من صفحة [الإصدارات](https://github.com/alimwork85-web/AltScribo/releases)، وفكّ ضغطه في أي مجلد، ثم شغّل `AltScribo.exe`. ستظهر الأيقونة في شريط المهام (قد تكون داخل السهم الصغير).
+نزّل الملف `AltScribo-v1.5.4-windows.zip` من صفحة [الإصدارات](https://github.com/alimwork85-web/AltScribo/releases)، وفكّ ضغطه في أي مجلد، ثم شغّل `AltScribo.exe`. ستظهر الأيقونة في شريط المهام (قد تكون داخل السهم الصغير).
 
 للتشغيل مع Windows تلقائيًا: اختر «التشغيل مع Windows» من قائمة الأيقونة، واختره مرة أخرى للإلغاء.
 
@@ -219,7 +236,10 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 ## سجل النصوص
 
-كل تعرّف ناجح يُضاف إلى `%APPDATA%\AltScribo\history.json` (آخر 20 عنصرًا، كتابة ذرية، ولا يُكتب فوق ملف تالف). وبندان في القائمة: «أعد لصق آخر نص» (معطّل عند الفراغ) و«فتح سجل النصوص».
+كل تعرّف ناجح يُضاف إلى `%APPDATA%\AltScribo\history.json` (آخر 20 عنصرًا، كتابة ذرية، ولا يُكتب فوق ملف تالف). وبندان في القائمة:
+
+- **أعد لصق آخر نص** — ينسخ آخر نص إلى الحافظة ويُشعرك، وتلصقه أنت بـ`Ctrl+V`. النسخ لا يعتمد على النافذة النشطة.
+- **فتح سجل النصوص** — نافذة صغيرة تعرض آخر 20 نصًا. اختر نصًا واضغط **«نسخ»** أو انقر عليه نقرًا مزدوجًا لنسخ النص الكامل لا المعاينة المختصرة. لا شريط تمرير في النافذة؛ عجلة الفأرة تمرّر القائمة.
 
 ## التعرف المحلي (Whisper)
 
