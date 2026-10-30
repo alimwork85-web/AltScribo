@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px; height: 640px; overflow: hidden;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: radial-gradient(120% 140% at 12% 0%, #17626F 0%, #0E3F4A 45%, #072A33 100%);
+    color: #F7F0DC; position: relative;
+  }
+  .wave { position: absolute; inset: 0; opacity: .13; }
+  .wrap { position: relative; display: flex; align-items: center; height: 100%; padding: 0 72px; gap: 56px; }
+  .left { flex: 1; }
+  .brand { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+  .brand img { width: 84px; height: 84px; border-radius: 22px; box-shadow: 0 12px 30px rgba(0,0,0,.35); }
+  .name { font-size: 72px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .name span { color: #E8912F; }
+  .tag { font-size: 30px; color: #DCD3BB; margin-top: 14px; line-height: 1.35; max-width: 640px; }
+  .ar { font-size: 28px; color: #CBD9DD; margin-top: 12px; direction: rtl; max-width: 660px; line-height: 1.5; }
+  .chips { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
+  .chip { font-size: 20px; padding: 9px 18px; border-radius: 999px;
+          background: rgba(247,240,220,.10); border: 1px solid rgba(247,240,220,.22); color: #EFE7D2; }
+  .chip.hot { background: #E8912F; border-color: #E8912F; color: #23180B; font-weight: 700; }
+  .right { width: 380px; display: flex; justify-content: center; }
+  .right img { width: 360px; height: 360px; border-radius: 84px;
+               box-shadow: 0 34px 70px rgba(0,0,0,.45), 0 0 0 10px rgba(247,240,220,.05); }
+  .footer { position: absolute; left: 72px; bottom: 34px; font-size: 19px; color: #9FB6BC; }
+  .footer b { color: #E8912F; font-weight: 600; }
+</style>
+</head>
+<body>
+  <svg class="wave" viewBox="0 0 1280 640" preserveAspectRatio="none">
+    <g fill="none" stroke="#F7F0DC" stroke-width="2">
+      <path d="M0 520 C 160 470, 260 570, 420 520 S 680 460, 840 515 S 1100 575, 1280 520"/>
+      <path d="M0 470 C 170 425, 250 515, 430 468 S 690 415, 850 462 S 1110 520, 1280 468"/>
+    </g>
+  </svg>
+
+  <div class="wrap">
+    <div class="left">
+      <div class="brand">
+        <img src="file:///C:/Users/suailali/Desktop/%D8%A7%D9%84%D9%85%D8%B3%D8%AA%D9%88%D8%AF%D8%B9/AltScribo/design/icon_512.png" alt="">
+        <div class="name">Alt<span>Scribo</span></div>
+      </div>
+      <div class="tag">Voice dictation for Windows — press a hotkey, speak, and the text is typed wherever you are.</div>
+      <div class="ar">إملاء صوتي عربي وإنجليزي — اضغط الاختصار، تكلّم، يُكتب النص في أي نافذة</div>
+      <div class="chips">
+        <div class="chip hot">Alt + F9</div>
+        <div class="chip">Arabic &amp; English</div>
+        <div class="chip">Offline Whisper</div>
+        <div class="chip">Free &amp; local</div>
+      </div>
+    </div>
+    <div class="right"><img src="file:///C:/Users/suailali/Desktop/%D8%A7%D9%84%D9%85%D8%B3%D8%AA%D9%88%D8%AF%D8%B9/AltScribo/design/icon_512.png" alt=""></div>
+  </div>
+
+  <div class="footer">Developed by <b>Ali Alhumedi</b> · github.com/alimwork85-web/AltScribo</div>
+</body>
+</html>

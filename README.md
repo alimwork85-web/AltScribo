@@ -1,6 +1,19 @@
-# AltScribo
+<p align="center">
+  <img src="docs/social-preview.png" alt="AltScribo — voice dictation for Windows" width="100%">
+</p>
 
-Voice dictation for Windows: press a hotkey, speak, and the text is typed into whatever window you are in. Bilingual (Arabic/English) interface, a system-wide hotkey that survives screen lock, a fully local Whisper engine, and an on-screen recording indicator.
+<h1 align="center">AltScribo</h1>
+
+<p align="center">
+  <a href="https://github.com/alimwork85-web/AltScribo/releases"><img alt="version" src="https://img.shields.io/badge/version-1.5.5-E8912F?style=for-the-badge"></a>
+  <img alt="platform" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-12545E?style=for-the-badge">
+  <img alt="interface" src="https://img.shields.io/badge/interface-Arabic%20%26%20English-0E7180?style=for-the-badge">
+  <img alt="offline" src="https://img.shields.io/badge/Whisper-offline-6B4A22?style=for-the-badge">
+</p>
+
+<p align="center"><b>Press a hotkey, speak, and the text is typed into whatever window you are in.</b></p>
+
+Bilingual (Arabic/English) interface, a system-wide hotkey that survives screen lock, a fully local Whisper engine, and an on-screen recording indicator.
 
 **Current version: 1.5.5** — Developer: **Ali Alhumedi**
 
@@ -16,14 +29,17 @@ Voice dictation for Windows: press a hotkey, speak, and the text is typed into w
 - "Paste last text" now **copies** the text to the clipboard and tells you, so `Ctrl+V` works no matter which window has focus.
 - The history window has a dark title bar matching the app.
 
-## How it works
+## 🎙️ How it works
 
 1. Put the caret wherever you want to write.
 2. Press `Alt+F9` — a high beep plays and the tray icon turns red: recording started.
 3. Speak, with no time limit.
 4. Press `Alt+F9` again — a low beep, and the text appears at the caret a moment later.
 
-## Features
+> [!TIP]
+> **Using a laptop?** If `F1`–`F12` are media keys on your keyboard, hold `Fn` (or enable Fn-Lock) while pressing `Alt+F9`. `Fn` is handled by the keyboard and never reaches the app, so it is not part of the shortcut.
+
+## ✨ Features
 
 - **System-wide hotkey:** works in any program and never leaks the `S` keystroke into the focused window. It uses the Windows `RegisterHotKey` API instead of a low-level hook, so it keeps working after `Win+L`, sleep, or long idle. If another program already owns the shortcut, you get a clear notification instead of silent failure.
 - **Bilingual interface:** the tray menu, notifications and tooltips follow Windows' language, or you can force Arabic or English from the menu.
@@ -41,13 +57,13 @@ Voice dictation for Windows: press a hotkey, speak, and the text is typed into w
 - **Update check:** notifies once if a newer release exists on GitHub. It never downloads or installs anything.
 - **Graceful failures:** clear notifications instead of silent ones; the log lives at `%APPDATA%\AltScribo\altscribo.log`.
 
-## Download and run
+## ⬇️ Download and run
 
 Download `AltScribo-v1.5.5-windows.zip` from the [releases page](https://github.com/alimwork85-web/AltScribo/releases), unzip it anywhere, then run `AltScribo.exe`. The icon appears in the notification area (possibly inside the hidden-icons arrow).
 
 To start it with Windows: choose "Start with Windows" in the tray menu, and choose it again to undo.
 
-## On-screen indicator
+## 🟢 On-screen indicator
 
 While recording, a small capsule appears at the bottom center of the screen that holds the active window:
 
@@ -59,23 +75,23 @@ While recording, a small capsule appears at the bottom center of the screen that
 
 The capsule never takes keyboard focus, never appears in `Alt+Tab` or the taskbar, and clicks pass through it to whatever is underneath. Turn it off with "On-screen indicator" in the tray menu.
 
-## Push-to-talk and auto-stop
+## 🎛️ Push-to-talk and auto-stop
 
 - **Hold to talk:** enable it from the menu (`push_to_talk`); recording then runs only while you hold the hotkey, and releasing the key stops it and pastes.
 - **Auto-stop on silence:** set `auto_stop_silence_seconds` above zero (e.g. `3`). Recording stops and pastes after that many seconds of silence. The countdown only starts once speech is detected, so silence before you start talking does not cut you off. `0` disables it.
 
-## Microphone selection
+## 🎤 Microphone selection
 
 Tray menu → "Microphone" → pick a device, or "Default". The device is stored by name (indices change between sessions), applied to the next recording, and cannot be changed while recording.
 
-## Text history
+## 🗂️ Text history
 
 Every successful recognition is appended to `%APPDATA%\AltScribo\history.json` (last 20 entries, atomic writes; a corrupted file is never overwritten). Menu items:
 
 - **Paste last text** — copies the latest text to the clipboard and notifies you; paste it yourself with `Ctrl+V`. Copying does not depend on which window has focus.
 - **Open text history** — a small window listing the last 20 texts. Select one and press **Copy** (or double-click it) to copy the full text, not the shortened preview. The window has no scrollbar; the mouse wheel scrolls the list.
 
-## Offline recognition (Whisper)
+## 🧠 Offline recognition (Whisper)
 
 Choose "Whisper (local, offline)" in the tray menu. On first use the model (~480 MB for `small`) is downloaded to `%APPDATA%\AltScribo\models`; afterwards recognition runs entirely on your machine, with no internet and no audio leaving the computer. Whisper punctuates by itself.
 
@@ -84,11 +100,11 @@ Choose "Whisper (local, offline)" in the tray menu. On first use the model (~480
 - If `faster-whisper` is not installed the option appears disabled as "Whisper (not installed)".
 - If the internet drops mid-use and Whisper is installed, the same recording is transcribed locally and you get a notification.
 
-## Speech language
+## 🌍 Speech language
 
 Tray menu → "Speech: Arabic" / "Speech: English" switches the recognition language between `ar-SA` and `en-US` with no restart and no model reload. This is independent of the interface language. In English mode the Arabic auto-punctuation and spoken punctuation commands are skipped; whitespace and digit normalization still applies.
 
-## Spoken punctuation
+## ✍️ Spoken punctuation
 
 | You say | Result |
 |---|---|
@@ -103,7 +119,7 @@ Tray menu → "Speech: Arabic" / "Speech: English" switches the recognition lang
 
 You can disable these commands from the menu if they conflict with what you dictate.
 
-## Settings
+## ⚙️ Settings
 
 Tray menu → "Open settings", or edit `%APPDATA%\AltScribo\settings.json`:
 
@@ -128,11 +144,11 @@ Tray menu → "Open settings", or edit `%APPDATA%\AltScribo\settings.json`:
 
 Restart after editing the file by hand (changes made from the menu apply immediately). `language` accepts other dialects such as `ar-EG` or `ar-AE`.
 
-## Privacy
+## 🔒 Privacy
 
 With the Google engine the recorded audio is sent to Google's speech service, which is why it needs internet. With Whisper the audio never leaves your machine. Recordings are not stored; dictated texts are kept only in the local `history.json` (last 20, on your disk), and `altscribo.log` holds startup events and errors only.
 
-## Run from source
+## 🧑‍💻 Run from source
 
 ```bash
 python -m venv venv
@@ -142,7 +158,7 @@ venv\Scripts\python main.py
 
 For local recognition install `requirements-whisper.txt` instead. That needs Python 3.12–3.14, because `ctranslate2` and `onnxruntime` are not available for Python 3.15 yet.
 
-## Build the EXE
+## 📦 Build the EXE
 
 ```bash
 venv\Scripts\pyinstaller AltScribo.spec --noconfirm
@@ -150,7 +166,7 @@ venv\Scripts\pyinstaller AltScribo.spec --noconfirm
 
 Output: `dist\AltScribo\AltScribo.exe`. If `faster-whisper` is installed in the build environment, local recognition is bundled automatically (larger build); otherwise the build ships the Google engine only. The exe carries a version resource with the publisher name and version (see `version_info.txt`).
 
-## Code layout
+## 🗺️ Code layout
 
 - `altscribo/config.py`: paths, settings, logging.
 - `altscribo/recorder.py`: microphone recording, device selection, silence detection.
@@ -163,11 +179,11 @@ Output: `dist\AltScribo\AltScribo.exe`. If `faster-whisper` is installed in the 
 - `altscribo/injector.py`: paste via the clipboard, keeping the old contents.
 - `altscribo/app.py`: tray icon, global hotkey, notifications, update check.
 
-## Requirements
+## 🧩 Requirements
 
 Windows 10 or newer, a microphone, and an internet connection (for the Google engine, or the first Whisper model download only).
 
-## Developer
+## 👤 Developer
 
 **Ali Alhumedi** — [github.com/alimwork85-web](https://github.com/alimwork85-web) · © 2026 Ali Alhumedi
 
@@ -193,14 +209,17 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 - «أعد لصق آخر نص» صار **ينسخ** النص إلى الحافظة ويُشعرك بذلك، فتلصقه أنت بـ`Ctrl+V` أيًّا كانت النافذة النشطة.
 - نافذة السجل بشريط عنوان داكن يطابق التطبيق.
 
-## كيف تعمل
+## 🎙️ كيف تعمل
 
 1. ضع المؤشر في أي مكان تريد الكتابة فيه.
 2. اضغط `Alt+F9`، فتسمع نغمة حادة وتتحول الأيقونة إلى أيقونة بنقطة حمراء: بدأ التسجيل.
 3. تكلّم دون أي حد زمني.
 4. اضغط `Alt+F9` مرة ثانية، فتسمع نغمة منخفضة، ثم يظهر النص في مكان المؤشر خلال لحظات.
 
-## المزايا
+> [!TIP]
+> **تستخدم لابتوب؟** إن كانت `F1`–`F12` في لوحتك مفاتيح وسائط، فاضغط `Fn` (أو فعّل Fn-Lock) مع `Alt+F9`. `Fn` تعالجها اللوحة ولا تصل إلى البرنامج، فليست جزءًا من الاختصار.
+
+## ✨ المزايا
 
 - **اختصار عام ثابت:** يعمل في أي برنامج، ولا يمرّر حرف `S` إلى النافذة المفتوحة. يستخدم `RegisterHotKey` في Windows بدل خطاف لوحة المفاتيح، فيبقى يعمل بعد قفل الشاشة (`Win+L`) وبعد السكون. وإن كان الاختصار محجوزًا لبرنامج آخر تظهر رسالة واضحة بدل الفشل الصامت.
 - **واجهة ثنائية اللغة:** القائمة والإشعارات وتلميح الأيقونة تتبع لغة Windows، أو تختار العربية أو الإنجليزية من القائمة.
@@ -218,13 +237,13 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 - **فحص التحديثات:** إشعار واحد إن وُجد إصدار أحدث على GitHub، بلا تنزيل أو تثبيت تلقائي.
 - **أعطال واضحة:** إشعارات عربية بدل الفشل الصامت، والسجلّ في `%APPDATA%\AltScribo\altscribo.log`.
 
-## التنزيل والتشغيل
+## ⬇️ التنزيل والتشغيل
 
 نزّل الملف `AltScribo-v1.5.5-windows.zip` من صفحة [الإصدارات](https://github.com/alimwork85-web/AltScribo/releases)، وفكّ ضغطه في أي مجلد، ثم شغّل `AltScribo.exe`. ستظهر الأيقونة في شريط المهام (قد تكون داخل السهم الصغير).
 
 للتشغيل مع Windows تلقائيًا: اختر «التشغيل مع Windows» من قائمة الأيقونة، واختره مرة أخرى للإلغاء.
 
-## المؤشر على الشاشة
+## 🟢 المؤشر على الشاشة
 
 أثناء التسجيل تظهر كبسولة أسفل وسط الشاشة التي فيها نافذتك النشطة:
 
@@ -236,23 +255,23 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 لا يأخذ المؤشر التركيز، ولا يظهر في `Alt+Tab` أو شريط المهام، والنقر عليه يمر إلى ما تحته. لإخفائه: بند «مؤشر التسجيل على الشاشة» في القائمة.
 
-## اضغط مع الاستمرار والإيقاف بعد صمت
+## 🎛️ اضغط مع الاستمرار والإيقاف بعد صمت
 
 - **اضغط مع الاستمرار:** فعّله من القائمة (`push_to_talk`)، فيسجّل ما دام الاختصار مضغوطًا، ويوقف عند رفع الإصبع ويُلصق.
 - **الإيقاف بعد صمت:** اجعل `auto_stop_silence_seconds` أكبر من صفر (مثل `3`)، فيتوقف التسجيل ويُلصق بعد هذه المدة من الصمت. لا يبدأ العدّ قبل سماع كلام، فالصمت قبل أن تبدأ لا يقطعك. و`0` يعطّله.
 
-## اختيار الميكروفون
+## 🎤 اختيار الميكروفون
 
 قائمة الأيقونة ← «الميكروفون» ← اختر الجهاز أو «الافتراضي». يُحفظ الجهاز بالاسم (الأرقام تتغير بين الجلسات)، ويُطبَّق على التسجيل التالي، ولا يمكن تغييره أثناء التسجيل.
 
-## سجل النصوص
+## 🗂️ سجل النصوص
 
 كل تعرّف ناجح يُضاف إلى `%APPDATA%\AltScribo\history.json` (آخر 20 عنصرًا، كتابة ذرية، ولا يُكتب فوق ملف تالف). وبندان في القائمة:
 
 - **أعد لصق آخر نص** — ينسخ آخر نص إلى الحافظة ويُشعرك، وتلصقه أنت بـ`Ctrl+V`. النسخ لا يعتمد على النافذة النشطة.
 - **فتح سجل النصوص** — نافذة صغيرة تعرض آخر 20 نصًا. اختر نصًا واضغط **«نسخ»** أو انقر عليه نقرًا مزدوجًا لنسخ النص الكامل لا المعاينة المختصرة. لا شريط تمرير في النافذة؛ عجلة الفأرة تمرّر القائمة.
 
-## التعرف المحلي (Whisper)
+## 🧠 التعرف المحلي (Whisper)
 
 اختر «Whisper محلي بلا إنترنت» من القائمة. في أول استخدام يُنزَّل النموذج (نحو 480 ميغابايت لنموذج `small`) إلى `%APPDATA%\AltScribo\models`، ثم يعمل التعرف كاملًا على جهازك دون إنترنت ودون إرسال صوتك لأي جهة. يضع Whisper علامات الترقيم بنفسه.
 
@@ -261,11 +280,11 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 - إن لم تكن مكتبة faster-whisper مثبّتة يظهر الخيار معطّلًا بعبارة «غير مثبّت».
 - إن انقطع الإنترنت أثناء العمل ووُجد Whisper، يُعاد التعرّف محليًا على نفس التسجيل مع إشعار.
 
-## لغة التعرف على الكلام
+## 🌍 لغة التعرف على الكلام
 
 بند «لغة الكلام: العربية / English» يبدّل لغة التعرّف بين `ar-SA` و`en-US` دون إعادة تشغيل أو تحميل نموذج. وهذا مستقل عن لغة الواجهة. في الإنجليزية لا يُطبَّق الترقيم العربي التلقائي ولا الأوامر المنطوقة العربية، ويبقى تنظيم المسافات والأرقام.
 
-## أوامر الترقيم المنطوقة
+## ✍️ أوامر الترقيم المنطوقة
 
 | تقول | يُكتب |
 |---|---|
@@ -280,7 +299,7 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 يمكن إيقاف هذه الأوامر من القائمة إن كانت تتعارض مع ما تكتبه.
 
-## الإعدادات
+## ⚙️ الإعدادات
 
 من قائمة الأيقونة اختر «فتح الإعدادات»، أو افتح `%APPDATA%\AltScribo\settings.json`:
 
@@ -305,11 +324,11 @@ Windows 10 or newer, a microphone, and an internet connection (for the Google en
 
 أعد تشغيل الأداة بعد أي تعديل يدوي على الملف (ما تغيّره من القائمة يُحفظ ويعمل فورًا). ويمكنك تغيير `language` إلى لهجة أخرى مثل `ar-EG` أو `ar-AE`.
 
-## الخصوصية
+## 🔒 الخصوصية
 
 مع محرك Google يُرسل الصوت المسجَّل إلى خدمة Google للتعرف على الكلام، ولذلك يحتاج إلى اتصال بالإنترنت. ومع محرك Whisper لا يغادر الصوت جهازك. لا تُحفظ التسجيلات؛ والنصوص المُملاة تُحفظ فقط في `history.json` المحلي (آخر 20)، وسجلّ التشغيل `altscribo.log` يحوي أحداث التشغيل والأخطاء فقط.
 
-## التشغيل من المصدر
+## 🧑‍💻 التشغيل من المصدر
 
 ```bash
 python -m venv venv
@@ -319,7 +338,7 @@ venv\Scripts\python main.py
 
 لتفعيل التعرف المحلي ثبّت `requirements-whisper.txt` بدل `requirements.txt`. يتطلب ذلك Python من 3.12 إلى 3.14، لأن حزم ctranslate2 وonnxruntime غير متوفرة لـ Python 3.15 بعد.
 
-## بناء ملف EXE
+## 📦 بناء ملف EXE
 
 ```bash
 venv\Scripts\pyinstaller AltScribo.spec --noconfirm
@@ -327,7 +346,7 @@ venv\Scripts\pyinstaller AltScribo.spec --noconfirm
 
 يظهر الناتج في `dist\AltScribo\AltScribo.exe`. إن كانت faster-whisper مثبّتة في بيئة البناء يُضمَّن التعرف المحلي تلقائيًا (ويزيد حجم البرنامج)، وإلا يُبنى بمحرك Google فقط. ويحمل الملف مورد إصدار باسم الناشر ورقم الإصدار (انظر `version_info.txt`).
 
-## بنية الكود
+## 🗺️ بنية الكود
 
 - `altscribo/config.py`: المسارات والإعدادات والسجلّ.
 - `altscribo/recorder.py`: التسجيل واختيار الميكروفون وكشف الصمت.
@@ -340,11 +359,11 @@ venv\Scripts\pyinstaller AltScribo.spec --noconfirm
 - `altscribo/injector.py`: اللصق عبر الحافظة مع حفظها وإعادتها.
 - `altscribo/app.py`: أيقونة الشريط والاختصار والإشعارات وفحص التحديثات.
 
-## المتطلبات
+## 🧩 المتطلبات
 
 Windows 10 أو أحدث، وميكروفون، واتصال بالإنترنت (لمحرك Google، أو لتنزيل نموذج Whisper أول مرة فقط).
 
-## المطوّر
+## 👤 المطوّر
 
 **Ali Alhumedi** — [github.com/alimwork85-web](https://github.com/alimwork85-web) · © 2026 Ali Alhumedi
 
