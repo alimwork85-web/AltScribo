@@ -1,4 +1,5 @@
 """ نافذة سجل النصوص: آخر النصوص في قائمة، ونقرة مزدوجة أو زر «نسخ» تنسخ النص """
+import ctypes
 import threading
 import tkinter as tk
 import tkinter.font as tkfont
@@ -91,6 +92,17 @@ def show(items):
     threading.Thread(target=_run, args=(list(items),), daemon=True).start()
 
 
+def _dark_titlebar(root):
+    """ شريط العنوان بلون المحتوى؛ Tk يرسمه فاتحًا دائمًا """
+    try:
+        root.update_idletasks()
+        hwnd = ctypes.windll.user32.GetParent(root.winfo_id())
+        dark = ctypes.c_int(1 if _is_dark_theme() else 0)
+        ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(dark), 4)
+    except Exception:
+        pass  # ponytail: فشل التزيين لا يُسقط النافذة
+
+
 def _run(items):
     global _root
     root = tk.Tk()
@@ -99,6 +111,7 @@ def _run(items):
     root.minsize(420, 320)
     root.attributes("-topmost", True)
     build_window(root, items)
+    _dark_titlebar(root)
 
     def on_close():
         global _root
